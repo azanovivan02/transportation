@@ -8,6 +8,8 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import static java.lang.Math.abs;
+
 public class GeneralUtils {
 
     public static <T> List<T> flatten(List<List<T>> nestedList) {
@@ -34,4 +36,16 @@ public class GeneralUtils {
                 LinkedHashMap::new);
     }
 
+    public static boolean doubleEquals(double a,
+                                       double b) {
+        return abs(a - b) < 0.00001;
+    }
+
+    public static <T> T removeLast(List<T> list) {
+        if (!list.isEmpty()) {
+            return list.remove(list.size() - 1);
+        } else {
+            return null;
+        }
+    }
 }

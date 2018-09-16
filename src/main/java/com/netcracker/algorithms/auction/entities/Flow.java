@@ -1,5 +1,6 @@
 package com.netcracker.algorithms.auction.entities;
 
+import java.util.List;
 import java.util.Objects;
 
 import static java.lang.Math.abs;
@@ -27,6 +28,13 @@ public class Flow {
         return new Flow(sourceIndex, sinkIndex, 0.0, 0.0);
     }
 
+    public static Double getVolume(List<Flow> flowList) {
+        return flowList
+                .stream()
+                .map(Flow::getVolume)
+                .reduce(0.0, (total, volume) -> total += volume);
+    }
+
     public int getSourceIndex() {
         return sourceIndex;
     }
@@ -43,12 +51,12 @@ public class Flow {
         return price;
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         //todo replace with Double library method call
         return abs(volume) < 0.000001;
     }
 
-    public double getProfit(int value){
+    public double getProfit(int value) {
         return value - price;
     }
 
@@ -58,6 +66,10 @@ public class Flow {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public Flow split(double requestedVolume) {
+        return new Flow(sourceIndex, sinkIndex, requestedVolume, price);
     }
 
     @Override

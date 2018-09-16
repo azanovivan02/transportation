@@ -1,9 +1,16 @@
 package com.netcracker.algorithms.auction.entities;
 
+import com.netcracker.algorithms.auction.AuctionAlgorithm;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.netcracker.algorithms.auction.entities.Flow.createEmptyFlow;
+import static com.netcracker.algorithms.auction.entities.Flow.getVolume;
+import static java.util.Arrays.*;
+import static java.util.stream.Collectors.toList;
 
 public class FlowMatrix {
 
@@ -29,6 +36,12 @@ public class FlowMatrix {
 
     public Flow getUnusedFlow(int sinkIndex) {
         return unusedFlowArray[sinkIndex];
+    }
+
+    public List<Flow> getCurrentFlowList(int sourceIndex) {
+        return stream(flowMatrix[sourceIndex])
+                .filter(flow -> !flow.isEmpty())
+                .collect(toList());
     }
 
     public List<Flow> getAvailableFlowList(int sourceIndex) {
