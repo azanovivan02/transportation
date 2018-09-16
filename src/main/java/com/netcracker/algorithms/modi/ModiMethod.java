@@ -18,8 +18,8 @@ public class ModiMethod implements TransportationProblemSolver {
     public Allocation findAllocation(TransportationProblem problem) {
 
         int[][] costMatrix = problem.getCostMatrix();
-        int[] supplyArray = problem.getSupplyArray();
-        int[] demandArray = problem.getDemandArray();
+        int[] sourceArray = problem.getSourceArray();
+        int[] sinkArray = problem.getSinkArray();
 
         int numRows = costMatrix.length;
         int numCols = costMatrix[0].length;
@@ -28,20 +28,20 @@ public class ModiMethod implements TransportationProblemSolver {
 
         int totalSupply = 0;
         for (int i = 0; i < numRows; i++) {
-            totalSupply += supplyArray[i];
+            totalSupply += sourceArray[i];
         }
 
         /* Total Demand */
 
         int totalDemand = 0;
         for (int j = 0; j < numCols; j++) {
-            totalDemand += demandArray[j];
+            totalDemand += sinkArray[j];
         }
 
         /* Finding  basic feasible solution */
 
         int allocationMatrix[][] = new int[numRows][numCols];
-        applyNorthWestCornerRule(allocationMatrix, supplyArray, demandArray, totalSupply, totalDemand);
+        applyNorthWestCornerRule(allocationMatrix, sourceArray, sinkArray, totalSupply, totalDemand);
         int totalNumAllocations = getTotalNumAllocations(allocationMatrix, numRows, numCols);
 
         /* Launching main loop */

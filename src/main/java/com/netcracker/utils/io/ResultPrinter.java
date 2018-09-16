@@ -16,9 +16,9 @@ public class ResultPrinter {
 
     public static void printResults(Map<TransportationProblem, Map<String, Allocation>> allResults) {
         allResults.forEach((problem, allAllocationsForProblem) -> {
-            int supplyArrayLength = problem.getSupplyArray().length;
-            int demandArraylength = problem.getDemandArray().length;
-            logger.info("Allocations for size: %d x %d", supplyArrayLength, demandArraylength);
+            int sourceArrayLength = problem.getSourceArray().length;
+            int sinkArraylength = problem.getSinkArray().length;
+            logger.info("Allocations for size: %d x %d", sourceArrayLength, sinkArraylength);
             allAllocationsForProblem.forEach((solverName, allocation) -> {
                 logger.info("=== %s ===", solverName);
                 logger.info(allocation.toString());

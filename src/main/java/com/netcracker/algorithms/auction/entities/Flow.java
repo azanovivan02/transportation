@@ -10,8 +10,8 @@ public class Flow {
     private final int sourceIndex;
     private final int sinkIndex;
 
-    private double volume;
-    private double price;
+    private final double volume;
+    private final double price;
 
     public Flow(int sourceIndex,
                 int sinkIndex,
@@ -56,16 +56,19 @@ public class Flow {
         return abs(volume) < 0.000001;
     }
 
-    public double getProfit(int value) {
-        return value - price;
+    public boolean isNotEmpty() {
+        //todo replace with Double library method call
+        return !isEmpty();
     }
 
-    public void setVolume(double volume) {
-        this.volume = volume;
+    public double getValue(int sourceIndex,
+                           int[][] benefitMatrix) {
+        int benefit = benefitMatrix[sourceIndex][sinkIndex];
+        return getValue(benefit);
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public double getValue(int benefit) {
+        return benefit - price;
     }
 
     public Flow split(double requestedVolume) {

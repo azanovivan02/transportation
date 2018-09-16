@@ -15,9 +15,9 @@ public class ProblemSupplier {
                 {70, 30, 40, 60},
                 {40, 10, 60, 20}
         };
-        int[] supplyArray = new int[]{7, 10, 18};
-        int[] demandArray = new int[]{5, 8, 7, 15};
-        TransportationProblem problem = new TransportationProblem(costMatrix, supplyArray, demandArray);
+        int[] sourceArray = new int[]{7, 10, 18};
+        int[] sinkArray = new int[]{5, 8, 7, 15};
+        TransportationProblem problem = new TransportationProblem(costMatrix, sourceArray, sinkArray);
 
         return singletonList(problem);
     }

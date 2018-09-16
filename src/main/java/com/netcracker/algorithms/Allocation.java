@@ -1,5 +1,6 @@
 package com.netcracker.algorithms;
 
+import static com.netcracker.utils.GeneralUtils.intMatrixToString;
 import static java.lang.String.format;
 
 public class Allocation {
@@ -36,7 +37,7 @@ public class Allocation {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Total cost: ").append(totalCost).append(NEW_LINE);
-        sb.append(allocationMatrixToString(allocationMatrix));
+        sb.append(intMatrixToString(allocationMatrix));
         return sb.toString();
     }
 
@@ -51,19 +52,5 @@ public class Allocation {
         }
 
         return totalCost;
-    }
-
-    private static String allocationMatrixToString(int[][] allocationMatrix) {
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < allocationMatrix.length; i++) {
-            for (int j = 0; j < allocationMatrix[i].length; j++) {
-                String entry = format("%3d ", allocationMatrix[i][j]);
-                sb.append(entry);
-            }
-            sb.append(NEW_LINE);
-        }
-
-        return sb.toString();
     }
 }

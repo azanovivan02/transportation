@@ -1,14 +1,13 @@
 package com.netcracker.utils;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.abs;
+import static java.lang.String.format;
+import static java.util.Collections.unmodifiableList;
 
 public class GeneralUtils {
 
@@ -47,5 +46,34 @@ public class GeneralUtils {
         } else {
             return null;
         }
+    }
+
+    public static <E> void prettyPrintList(List<E> list) {
+        for (E elem : list) {
+            System.out.println(elem);
+        }
+    }
+
+    @SafeVarargs
+    public static <E> List<E> merge(List<E>... listArray) {
+        List<E> mergedList = new ArrayList<>();
+        for (List<E> list : listArray) {
+            mergedList.addAll(list);
+        }
+        return unmodifiableList(mergedList);
+    }
+
+    public static String intMatrixToString(int[][] matrix) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                String entry = format("%3d ", matrix[i][j]);
+                sb.append(entry);
+            }
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 }
