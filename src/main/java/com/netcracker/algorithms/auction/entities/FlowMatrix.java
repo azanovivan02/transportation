@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static com.netcracker.utils.GeneralUtils.doubleEquals;
+import static com.netcracker.utils.GeneralUtils.intMatrixToString;
 import static java.lang.String.format;
+import static java.lang.System.arraycopy;
 import static java.util.stream.Collectors.toList;
 
 public class FlowMatrix {
@@ -16,10 +18,10 @@ public class FlowMatrix {
     private final int[] sourceArray;
     private final int[] sinkArray;
 
-    private final double[][] volumeMatrix;
+    private final int[][] volumeMatrix;
     private final double[][] priceMatrix;
 
-    private final double[] unusedVolumeArray;
+    private final int[] unusedVolumeArray;
     private final int sourceAmount;
     private final int sinkAmount;
 
@@ -31,7 +33,7 @@ public class FlowMatrix {
         this.sourceAmount = sourceArray.length;
         this.sinkAmount = sinkArray.length;
 
-        this.volumeMatrix = new double[sourceAmount][sinkAmount];
+        this.volumeMatrix = new int[sourceAmount][sinkAmount];
         this.priceMatrix = new double[sourceAmount][sinkAmount];
 
         this.unusedVolumeArray = createUnusedVolumeArray(sinkArray);
@@ -39,7 +41,7 @@ public class FlowMatrix {
 
     public Flow getFlow(int sourceIndex,
                         int sinkIndex) {
-        double volume = volumeMatrix[sourceIndex][sinkIndex];
+        int volume = volumeMatrix[sourceIndex][sinkIndex];
         double price = priceMatrix[sourceIndex][sinkIndex];
         return new Flow(
                 sourceIndex,
@@ -49,10 +51,41 @@ public class FlowMatrix {
         );
     }
 
-    public void setVolumeForFlow(int sourceIndex,
-                                 int sinkIndex,
-                                 double newVolume) {
-        volumeMatrix[sourceIndex][sinkIndex] = newVolume;
+    public int[][] getVolumeMatrix() {
+        return volumeMatrix;
+    }
+
+    public double[][] getPriceMatrix() {
+        return priceMatrix;
+    }
+
+    public void increaseVolumeForFlow(int sourceIndex,
+                                      int sinkIndex,
+                                      int volumeIncrease) {
+        if (sourceIndex < 0) {
+            throw new IllegalStateException("Can't increase volume for unused flow");
+        }
+        volumeMatrix[sourceIndex][sinkIndex] += volumeIncrease;
+    }
+
+    public void decreaseVolumeForFlow(int sourceIndex,
+                                      int sinkIndex,
+                                      int volumeDecrease) {
+        if (sourceIndex < 0) {
+            int newVolume = unusedVolumeArray[sinkIndex] - volumeDecrease;
+            if (newVolume >= 0) {
+                unusedVolumeArray[sinkIndex] = newVolume;
+            } else {
+                throw new IllegalStateException("Volume can't be negative");
+            }
+        } else {
+            int newVolume = volumeMatrix[sourceIndex][sinkIndex] - volumeDecrease;
+            if (newVolume >= 0) {
+                volumeMatrix[sourceIndex][sinkIndex] = newVolume;
+            } else {
+                throw new IllegalStateException("Volume can't be negative");
+            }
+        }
     }
 
     public void setPriceForFlow(int sourceIndex,
@@ -73,7 +106,7 @@ public class FlowMatrix {
     }
 
     public Flow getUnusedFlow(int sinkIndex) {
-        double unusedVolume = unusedVolumeArray[sinkIndex];
+        int unusedVolume = unusedVolumeArray[sinkIndex];
         return new Flow(
                 UNUSED_SOURCE_INDEX,
                 sinkIndex,
@@ -116,15 +149,15 @@ public class FlowMatrix {
     public void resetVolumeMatrix() {
         for (int i = 0; i < sourceAmount; i++) {
             for (int j = 0; j < sinkAmount; j++) {
-                volumeMatrix[i][j] = 0.0;
+                volumeMatrix[i][j] = 0;
             }
         }
     }
 
     public void resetUnusedFlowArray() {
         for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
-            double totalVolume = sinkArray[sinkIndex];
-            double usedVolume = 0.0;
+            int totalVolume = sinkArray[sinkIndex];
+            int usedVolume = 0;
             for (int sourseIndex = 0; sourseIndex < sourceAmount; sourseIndex++) {
                 usedVolume += volumeMatrix[sourseIndex][sinkIndex];
             }
@@ -147,24 +180,12 @@ public class FlowMatrix {
     }
 
     public String volumeMatrixToString() {
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < volumeMatrix.length; i++) {
-            for (int j = 0; j < volumeMatrix[i].length; j++) {
-                String entry = format("%3.1f ", volumeMatrix[i][j]);
-                sb.append(entry);
-            }
-            sb.append("\n");
-        }
-
-        return sb.toString();
+        return intMatrixToString(volumeMatrix);
     }
 
-    private static double[] createUnusedVolumeArray(int[] sinkArray) {
-        double[] unusedVolumeArray = new double[sinkArray.length];
-        for (int j = 0; j < sinkArray.length; j++) {
-            unusedVolumeArray[j] = sinkArray[j];
-        }
+    private static int[] createUnusedVolumeArray(int[] sinkArray) {
+        int[] unusedVolumeArray = new int[sinkArray.length];
+        arraycopy(sinkArray, 0, unusedVolumeArray, 0, sinkArray.length);
         return unusedVolumeArray;
     }
 }

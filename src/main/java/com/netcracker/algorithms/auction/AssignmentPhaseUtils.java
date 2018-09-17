@@ -7,7 +7,6 @@ import com.netcracker.algorithms.auction.entities.FlowMatrix;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.netcracker.utils.GeneralUtils.doubleEquals;
 import static com.netcracker.utils.GeneralUtils.prettyPrintList;
 import static com.netcracker.utils.GeneralUtils.removeLast;
 import static com.netcracker.utils.io.AssertionUtils.customAssert;
@@ -22,12 +21,12 @@ public class AssignmentPhaseUtils {
             List<Bid> bidList = bidMap.getBidsForSink(sinkIndex);
             bidList.sort(comparingDouble(Bid::getBidValue));
 
-            double acceptedBidVolume = 0.0;
-            double totalVolume = sinkArray[sinkIndex];
+            int acceptedBidVolume = 0;
+            int totalVolume = sinkArray[sinkIndex];
             while (acceptedBidVolume < totalVolume && !bidList.isEmpty()) {
                 Bid bid = removeLast(bidList);
-                double volume = bid.getVolume();
-                double remainingVolume = totalVolume - acceptedBidVolume;
+                int volume = bid.getVolume();
+                int remainingVolume = totalVolume - acceptedBidVolume;
                 if (volume < remainingVolume) {
                     acceptedBidList.add(bid);
                     acceptedBidVolume += bid.getVolume();
@@ -37,24 +36,29 @@ public class AssignmentPhaseUtils {
                     acceptedBidVolume += splittedBid.getVolume();
                 }
             }
-            customAssert(acceptedBidVolume < totalVolume || doubleEquals(acceptedBidVolume, totalVolume));
+            customAssert(acceptedBidVolume <= totalVolume);
         }
 
-        flowMatrix.resetVolumeMatrix();
+//        flowMatrix.resetVolumeMatrix();
 
         info("Accepted bids: ");
         prettyPrintList(acceptedBidList);
 
         for (Bid bid : acceptedBidList) {
             int bidderSourceIndex = bid.getBidderSourceIndex();
+            int ownerSourceIndex = bid.getOwnerSourceIndex();
             int sinkIndex = bid.getSinkIndex();
-            double volume = bid.getVolume();
+            int volume = bid.getVolume();
             double bidValue = bid.getBidValue();
 
-            flowMatrix.setVolumeForFlow(bidderSourceIndex, sinkIndex, volume);
+//            flowMatrix.setVolumeForFlow(bidderSourceIndex, sinkIndex, volume);
+
+            flowMatrix.increaseVolumeForFlow(bidderSourceIndex, sinkIndex, volume);
+            flowMatrix.decreaseVolumeForFlow(ownerSourceIndex, sinkIndex, volume);
+
             flowMatrix.setPriceForFlow(bidderSourceIndex, sinkIndex, bidValue);
 
         }
-        flowMatrix.resetUnusedFlowArray();
+//        flowMatrix.resetUnusedFlowArray();
     }
 }

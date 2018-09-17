@@ -10,12 +10,12 @@ public class Flow {
     private final int sourceIndex;
     private final int sinkIndex;
 
-    private final double volume;
+    private final int volume;
     private final double price;
 
     public Flow(int sourceIndex,
                 int sinkIndex,
-                double volume,
+                int volume,
                 double price) {
         this.sourceIndex = sourceIndex;
         this.sinkIndex = sinkIndex;
@@ -25,14 +25,14 @@ public class Flow {
 
     public static Flow createEmptyFlow(int sourceIndex,
                                        int sinkIndex) {
-        return new Flow(sourceIndex, sinkIndex, 0.0, 0.0);
+        return new Flow(sourceIndex, sinkIndex, 0, 0.0);
     }
 
-    public static Double getVolume(List<Flow> flowList) {
+    public static Integer getVolume(List<Flow> flowList) {
         return flowList
                 .stream()
                 .map(Flow::getVolume)
-                .reduce(0.0, (total, volume) -> total += volume);
+                .reduce(0, (total, volume) -> total += volume);
     }
 
     public int getSourceIndex() {
@@ -43,7 +43,7 @@ public class Flow {
         return sinkIndex;
     }
 
-    public double getVolume() {
+    public int getVolume() {
         return volume;
     }
 
@@ -71,7 +71,7 @@ public class Flow {
         return benefit - price;
     }
 
-    public Flow split(double requestedVolume) {
+    public Flow split(int requestedVolume) {
         return new Flow(sourceIndex, sinkIndex, requestedVolume, price);
     }
 

@@ -8,10 +8,10 @@ import com.netcracker.algorithms.auction.entities.FlowMatrix;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.netcracker.algorithms.auction.entities.Flow.getVolume;
 import static com.netcracker.utils.GeneralUtils.doubleEquals;
-import static com.netcracker.utils.GeneralUtils.merge;
 import static com.netcracker.utils.GeneralUtils.removeLast;
 import static com.netcracker.utils.io.AssertionUtils.customAssert;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
@@ -45,13 +45,14 @@ public class BiddingPhaseUtils {
                                           BidMap bidMap) {
         List<Flow> availableFlowList = flowMatrix.getAvailableFlowList(sourceIndex);
         List<Flow> currentFlowList = flowMatrix.getCurrentFlowList(sourceIndex);
-        double availableVolume = getAvailableVolume(totalVolume, currentFlowList);
+        int availableVolume = getAvailableVolume(totalVolume, currentFlowList);
         List<Flow> addedFlowList = getAddedFlowList(sourceIndex, availableFlowList, availableVolume, benefitMatrix);
 
-        List<Flow> desiredFlowList = merge(currentFlowList, addedFlowList);
+//        List<Flow> desiredFlowList = merge(currentFlowList, addedFlowList);
+        List<Flow> desiredFlowList = addedFlowList;
 
         customAssert(
-                doubleEquals(getVolume(desiredFlowList), totalVolume)
+                doubleEquals(getVolume(desiredFlowList), availableVolume)
         );
 
         Flow secondBestFlow = removeLast(availableFlowList);
@@ -73,7 +74,7 @@ public class BiddingPhaseUtils {
                                      Flow secondBestFlow) {
         int desiredFlowOwnerSourceIndex = desiredFlow.getSourceIndex();
         int desiredFlowSinkIndex = desiredFlow.getSinkIndex();
-        double desiredFlowVolume = desiredFlow.getVolume();
+        int desiredFlowVolume = desiredFlow.getVolume();
 
         int desiredFlowBenefit = benefitMatrix[desiredFlowSinkIndex];
         double desiredFlowPrice = desiredFlow.getPrice();
@@ -101,16 +102,16 @@ public class BiddingPhaseUtils {
 
     private static List<Flow> getAddedFlowList(int sourceIndex,
                                                List<Flow> availableFlowList,
-                                               double availableVolume,
+                                               int availableVolume,
                                                int[][] benefitMatrix) {
         sortByValueAscending(availableFlowList, sourceIndex, benefitMatrix);
         verifyThatSortedByValue(availableFlowList, sourceIndex, benefitMatrix);
         List<Flow> addedFlows = new ArrayList<>();
-        double addedVolume = 0.0;
+        int addedVolume = 0;
         while (addedVolume < availableVolume) {
             Flow flow = removeLast(availableFlowList);
             customAssert(flow != null, "Source can't consume more than all available flows");
-            double remainingVolume = availableVolume - addedVolume;
+            int remainingVolume = availableVolume - addedVolume;
             double volume = flow.getVolume();
             if (volume <= remainingVolume) {
                 addedVolume += volume;
@@ -137,20 +138,27 @@ public class BiddingPhaseUtils {
 
     private static void verifyThatSortedByValue(List<Flow> flowList,
                                                 int sourceIndex,
-                                                int[][] benefitMatrix){
-        double previousFlowValue = -1.0;
-        for(Flow flow : flowList){
-            double currentFlowValue = flow.getValue(sourceIndex, benefitMatrix);
-            if(currentFlowValue < previousFlowValue){
-                throw new IllegalStateException("Flow list is not sorted");
+                                                int[][] benefitMatrix) {
+        List<Double> flowValueList =
+                flowList
+                        .stream()
+                        .map(flow -> flow.getValue(sourceIndex, benefitMatrix))
+                        .collect(Collectors.toList());
+        double previousValue = Integer.MIN_VALUE;
+        for (Double value : flowValueList) {
+//            if(value < 0){
+//                throw new IllegalStateException("Flow list ocntains flow with negative value: " + flowValueList);
+//            }
+            if (value < previousValue) {
+                throw new IllegalStateException("Flow list is not sorted: " + flowValueList);
             }
-            previousFlowValue = currentFlowValue;
+            previousValue = value;
         }
     }
 
-    private static double getAvailableVolume(double totalVolume,
+    private static int getAvailableVolume(int totalVolume,
                                              List<Flow> currentFlowList) {
-        double currentVolume = getVolume(currentFlowList);
+        int currentVolume = getVolume(currentFlowList);
         return totalVolume - currentVolume;
     }
 }

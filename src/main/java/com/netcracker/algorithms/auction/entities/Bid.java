@@ -8,13 +8,13 @@ public class Bid {
 
     private final int ownerSourceIndex;
     private final int sinkIndex;
-    private final double volume;
+    private final int volume;
     private final double bidValue;
 
     public Bid(int bidderSourceIndex,
                int ownerSourceIndex,
                int sinkIndex,
-               double volume,
+               int volume,
                double bidValue) {
         this.bidderSourceIndex = bidderSourceIndex;
         this.ownerSourceIndex = ownerSourceIndex;
@@ -27,11 +27,15 @@ public class Bid {
         return bidderSourceIndex;
     }
 
+    public int getOwnerSourceIndex() {
+        return ownerSourceIndex;
+    }
+
     public int getSinkIndex() {
         return sinkIndex;
     }
 
-    public double getVolume() {
+    public int getVolume() {
         return volume;
     }
 
@@ -39,7 +43,7 @@ public class Bid {
         return bidValue;
     }
 
-    public Bid split(double requestedVolume) {
+    public Bid split(int requestedVolume) {
         return new Bid(bidderSourceIndex, ownerSourceIndex, sinkIndex, requestedVolume, bidValue);
     }
 

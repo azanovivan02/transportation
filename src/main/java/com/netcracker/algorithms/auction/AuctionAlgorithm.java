@@ -13,9 +13,7 @@ import java.util.List;
 import static com.netcracker.algorithms.auction.AssignmentPhaseUtils.performAssignmentPhase;
 import static com.netcracker.algorithms.auction.BiddingPhaseUtils.performBiddingPhase;
 import static com.netcracker.utils.GeneralUtils.intMatrixToString;
-import static com.netcracker.utils.io.AssertionUtils.customAssert;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
-import static java.lang.Math.abs;
 
 public class AuctionAlgorithm implements TransportationProblemSolver {
 
@@ -55,9 +53,11 @@ public class AuctionAlgorithm implements TransportationProblemSolver {
             );
         }
 
+        info("=== Auction Iteration is finished =================");
+        info("Result matrix\n");
         info(flowMatrix.volumeMatrixToString());
 
-        return new Allocation(problem, new int[3][4]);
+        return new Allocation(problem, flowMatrix.getVolumeMatrix());
     }
 
     private void performAuctionIteration(FlowMatrix flowMatrix,
