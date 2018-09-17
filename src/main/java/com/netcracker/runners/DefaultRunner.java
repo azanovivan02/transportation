@@ -7,6 +7,7 @@ import com.netcracker.algorithms.TransportationProblemSolver;
 import java.util.List;
 import java.util.Map;
 
+import static com.netcracker.utils.AllocationValidator.assertThatAllocationsAreIdentical;
 import static com.netcracker.utils.GeneralUtils.toLinkedMap;
 import static com.netcracker.utils.ProblemSupplier.createProblemList;
 import static com.netcracker.utils.SolverSupplier.createSolverMap;
@@ -25,7 +26,7 @@ public class DefaultRunner {
     }
 
     public static Map<TransportationProblem, Map<String, Allocation>> findAllocationForEveryProblem(List<TransportationProblem> problemList,
-                                                                                                 Map<String, TransportationProblemSolver> solverMap) {
+                                                                                                    Map<String, TransportationProblemSolver> solverMap) {
         return problemList
                 .stream()
                 .collect(toLinkedMap(
@@ -35,7 +36,7 @@ public class DefaultRunner {
     }
 
     public static Map<String, Allocation> findAllocationUsingMultipleSolvers(TransportationProblem problem,
-                                                                          Map<String, TransportationProblemSolver> solverMap) {
+                                                                             Map<String, TransportationProblemSolver> solverMap) {
         final Map<String, Allocation> allocationsForProblem = solverMap
                 .entrySet()
                 .stream()
@@ -43,7 +44,15 @@ public class DefaultRunner {
                         Map.Entry::getKey,
                         solverEntry -> findAllocationUsingOneSolver(problem, solverEntry.getValue())
                 ));
-//        assert assignmentsAreSame(allocationsForProblem);
+
+        int sourceAmount = problem.getSourceArray().length;
+        int sinkAmount = problem.getSinkArray().length;
+        assertThatAllocationsAreIdentical(
+                allocationsForProblem,
+                sourceAmount,
+                sinkAmount
+        );
+
         return allocationsForProblem;
     }
 

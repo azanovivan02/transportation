@@ -57,7 +57,8 @@ public class AuctionAlgorithm implements TransportationProblemSolver {
         info("Result matrix\n");
         info(flowMatrix.volumeMatrixToString());
 
-        return new Allocation(problem, flowMatrix.getVolumeMatrix());
+        int[][] volumeMatrix = flowMatrix.getVolumeMatrix();
+        return new Allocation(problem, volumeMatrix);
     }
 
     private void performAuctionIteration(FlowMatrix flowMatrix,
