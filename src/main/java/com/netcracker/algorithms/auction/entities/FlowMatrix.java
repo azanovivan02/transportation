@@ -41,14 +41,24 @@ public class FlowMatrix {
 
     public Flow getFlow(int sourceIndex,
                         int sinkIndex) {
-        int volume = volumeMatrix[sourceIndex][sinkIndex];
-        double price = priceMatrix[sourceIndex][sinkIndex];
-        return new Flow(
-                sourceIndex,
-                sinkIndex,
-                volume,
-                price
-        );
+        if (sourceIndex < 0) {
+            int volume = unusedVolumeArray[sinkIndex];
+            return new Flow(
+                    sourceIndex,
+                    sinkIndex,
+                    volume,
+                    UNUSED_PRICE
+            );
+        } else {
+            int volume = volumeMatrix[sourceIndex][sinkIndex];
+            double price = priceMatrix[sourceIndex][sinkIndex];
+            return new Flow(
+                    sourceIndex,
+                    sinkIndex,
+                    volume,
+                    price
+            );
+        }
     }
 
     public int[][] getVolumeMatrix() {
@@ -91,7 +101,8 @@ public class FlowMatrix {
     public void setPriceForFlow(int sourceIndex,
                                 int sinkIndex,
                                 double newPrice) {
-        double oldPrice = priceMatrix[sourceIndex][sinkIndex];
+//        double oldPrice = priceMatrix[sourceIndex][sinkIndex];
+        double oldPrice = Double.MIN_VALUE;
         if (newPrice >= oldPrice) {
             priceMatrix[sourceIndex][sinkIndex] = newPrice;
         } else {

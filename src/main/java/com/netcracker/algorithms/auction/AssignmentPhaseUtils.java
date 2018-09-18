@@ -26,6 +26,22 @@ public class AssignmentPhaseUtils {
             while (acceptedBidVolume < totalVolume && !bidList.isEmpty()) {
                 Bid bid = removeLast(bidList);
                 int volume = bid.getVolume();
+
+                int bidderSourceIndex = bid.getBidderSourceIndex();
+                int ownerSourceIndex = bid.getOwnerSourceIndex();
+                int currentlyOwnedVolume = flowMatrix.getFlow(ownerSourceIndex, sinkIndex).getVolume();
+                if(currentlyOwnedVolume < volume){
+                    String message = String.format(
+                            "Source %d attempts to buy volume %d to sink %d from source %d, but it owns only %d",
+                            bidderSourceIndex,
+                            volume,
+                            sinkIndex,
+                            ownerSourceIndex,
+                            currentlyOwnedVolume
+                    );
+                    throw new IllegalStateException(message);
+                }
+
                 int remainingVolume = totalVolume - acceptedBidVolume;
                 if (volume < remainingVolume) {
                     acceptedBidList.add(bid);
