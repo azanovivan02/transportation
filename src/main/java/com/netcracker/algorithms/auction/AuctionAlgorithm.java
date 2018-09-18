@@ -12,7 +12,6 @@ import java.util.List;
 
 import static com.netcracker.algorithms.auction.AssignmentPhaseUtils.performAssignmentPhase;
 import static com.netcracker.algorithms.auction.BiddingPhaseUtils.performBiddingPhase;
-import static com.netcracker.utils.GeneralUtils.intMatrixToString;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 
 public class AuctionAlgorithm implements TransportationProblemSolver {
@@ -36,7 +35,7 @@ public class AuctionAlgorithm implements TransportationProblemSolver {
         int[] sourceArray = problem.getSourceArray();
         int[] sinkArray = problem.getSinkArray();
         int[][] costMatrix = problem.getCostMatrix();
-        int[][] benefitMatrix = convertToBenefitMatrix(costMatrix);
+        int[][] benefitMatrix = TransportationProblem.convertToBenefitMatrix(costMatrix);
 
         FlowMatrix flowMatrix = new FlowMatrix(sourceArray, sinkArray);
 
@@ -84,33 +83,4 @@ public class AuctionAlgorithm implements TransportationProblemSolver {
         );
     }
 
-    private static int[][] convertToBenefitMatrix(int[][] costMatrix) {
-        int sourceAmout = costMatrix.length;
-        int sinkAmount = costMatrix[0].length;
-        int maxValue = getMaxValue(costMatrix) + 1;
-        int[][] benefitMatrix = new int[sourceAmout][sinkAmount];
-        for (int i = 0; i < sourceAmout; i++) {
-            for (int j = 0; j < sinkAmount; j++) {
-                benefitMatrix[i][j] = maxValue - costMatrix[i][j];
-            }
-        }
-
-        info("Converted to benefit matrix: ");
-        info(intMatrixToString(benefitMatrix));
-
-        return benefitMatrix;
-    }
-
-    private static int getMaxValue(int[][] costMatrix) {
-        int maxValue = Integer.MIN_VALUE;
-        for (int i = 0; i < costMatrix.length; i++) {
-            for (int j = 0; j < costMatrix[0].length; j++) {
-                int currentValue = costMatrix[i][j];
-                if (currentValue > maxValue) {
-                    maxValue = currentValue;
-                }
-            }
-        }
-        return maxValue;
-    }
 }
