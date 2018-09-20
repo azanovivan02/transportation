@@ -13,7 +13,7 @@ public class ProblemGenerator {
     private final static Random random = new Random();
 
     public static void main(String[] args) {
-        TransportationProblem problem = generateProblem(50, 50);
+        TransportationProblem problem = generateProblem(100, 100);
         System.out.println(problem.toJavaString());
     }
 

@@ -2,6 +2,7 @@ package com.netcracker.utils;
 
 import com.netcracker.algorithms.TransportationProblem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -9,13 +10,28 @@ import static java.util.Arrays.asList;
 public class ProblemSupplier {
 
     public static List<TransportationProblem> createProblemList() {
+//        return createFixedProblemList();
+        return createRandomProblemList();
+    }
+
+    private static List<TransportationProblem> createFixedProblemList(){
         return asList(
-//                createSmallProblem()
-//                createProblemFive()
-//                createProblemTen()
-//                createProblemTwenty()
+                createSmallProblem(),
+                createProblemFive(),
+                createProblemTen(),
+                createProblemTwenty(),
                 createProblemFifty()
         );
+    }
+
+    private static List<TransportationProblem> createRandomProblemList(){
+
+        List<TransportationProblem> problemList = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            TransportationProblem problem = ProblemGenerator.generateProblem(100, 100);
+            problemList.add(problem);
+        }
+        return problemList;
     }
 
     private static TransportationProblem createSmallProblem() {

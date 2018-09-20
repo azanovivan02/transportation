@@ -11,6 +11,8 @@ import static java.util.Collections.unmodifiableList;
 
 public class GeneralUtils {
 
+    public static final String NEWLINE = "\n";
+
     public static <T> List<T> flatten(List<List<T>> nestedList) {
         return nestedList
                 .stream()
@@ -48,16 +50,16 @@ public class GeneralUtils {
         }
     }
 
-    public static <E> void prettyPrintList(List<E> list) {
-        for (E elem : list) {
-            System.out.println(elem);
-        }
+    public static <E> String prettyPrintList(List<E> list) {
+        return prettyPrintList(list, "  - ");
     }
 
-    public static <E> void prettyPrintList(List<E> list, String leadingPart) {
+    public static <E> String prettyPrintList(List<E> list, String leadingPart) {
+        StringBuilder sb = new StringBuilder();
         for (E elem : list) {
-            System.out.println(leadingPart + elem);
+            sb.append(leadingPart).append(elem).append(NEWLINE);
         }
+        return sb.toString();
     }
 
     @SafeVarargs

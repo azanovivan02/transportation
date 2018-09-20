@@ -62,7 +62,7 @@ public class AssignmentPhaseUtils {
                 info("Sink %d accepted no bids", sinkIndex);
             } else {
                 info("Accepted bids for sink %d: ", sinkIndex);
-                prettyPrintList(acceptedBidList, "  - ");
+                info(prettyPrintList(acceptedBidList));
             }
 
             if (false) {
@@ -77,13 +77,13 @@ public class AssignmentPhaseUtils {
                 List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSink(sinkIndex);
                 sortByPriceDescending(currentFlowList);
                 info("Flows to sink %d by descending price:", sinkIndex);
-                prettyPrintList(currentFlowList, "  - ");
+                info(prettyPrintList(currentFlowList));
 
                 List<Flow> leastExpensiveFlowList = getSublistWithTotalVolume(currentFlowList, acceptedBidVolume);
                 if (!leastExpensiveFlowList.isEmpty()) {
                     info("Least expensive flows from them, which have total volume %d:", acceptedBidVolume);
                 }
-                prettyPrintList(leastExpensiveFlowList, "  - ");
+                info(prettyPrintList(leastExpensiveFlowList));
 
                 for (Flow flow : leastExpensiveFlowList) {
                     flowMatrix.decreaseVolumeForFlow(
