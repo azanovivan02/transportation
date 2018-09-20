@@ -13,7 +13,7 @@ public class SolverSupplier {
         Map<String, TransportationProblemSolver> solverMap = new LinkedHashMap<>();
 
         solverMap.put("Auction", new AuctionAlgorithm());
-        solverMap.put("MODI", new ModiMethod());
+//        solverMap.put("MODI", new ModiMethod());
 
         return solverMap;
     }

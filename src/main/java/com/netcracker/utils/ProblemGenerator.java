@@ -13,7 +13,7 @@ public class ProblemGenerator {
     private final static Random random = new Random();
 
     public static void main(String[] args) {
-        TransportationProblem problem = generateProblem(10, 10);
+        TransportationProblem problem = generateProblem(50, 50);
         System.out.println(problem.toJavaString());
     }
 
@@ -33,6 +33,18 @@ public class ProblemGenerator {
                                                         int maxBenefit,
                                                         int maxSourceVolume,
                                                         int maxSinkVolume) {
+        TransportationProblem problem = null;
+        while (problem == null) {
+            problem = tryToGenerateProblem(sourceAmount, sinkAmount, maxBenefit, maxSourceVolume, maxSinkVolume);
+        }
+        return problem;
+    }
+
+    private static TransportationProblem tryToGenerateProblem(int sourceAmount,
+                                                              int sinkAmount,
+                                                              int maxBenefit,
+                                                              int maxSourceVolume,
+                                                              int maxSinkVolume) {
         int[][] costMatrix = generateBenefitMatrix(
                 sourceAmount,
                 sinkAmount,
@@ -56,12 +68,11 @@ public class ProblemGenerator {
             totalSourceVolume += sourceArray[sourceIndex];
         }
 
-        //todo implement retry in a while loop
-        if(totalSinkVolume <= totalSourceVolume){
-            throw new IllegalStateException("Generated problem is incorrect");
+        if (totalSinkVolume > totalSourceVolume) {
+            return new TransportationProblem(costMatrix, sourceArray, sinkArray);
+        } else {
+            return null;
         }
-
-        return new TransportationProblem(costMatrix, sourceArray, sinkArray);
     }
 
     private static int[][] generateBenefitMatrix(int sourceAmount,
