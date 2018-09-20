@@ -51,6 +51,7 @@ public class Bid {
     public String toString() {
         return "Bid{" +
                 "bidderSourceIndex=" + bidderSourceIndex +
+                ", ownerSourceIndex=" + ownerSourceIndex +
                 ", sinkIndex=" + sinkIndex +
                 ", volume=" + volume +
                 ", bidValue=" + bidValue +

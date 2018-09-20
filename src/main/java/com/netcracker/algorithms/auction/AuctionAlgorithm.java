@@ -56,6 +56,8 @@ public class AuctionAlgorithm implements TransportationProblemSolver {
         info("Result matrix\n");
         info(flowMatrix.volumeMatrixToString());
 
+        flowMatrix.assertIsValid();
+
         int[][] volumeMatrix = flowMatrix.getVolumeMatrix();
         return new Allocation(problem, volumeMatrix);
     }
@@ -78,8 +80,8 @@ public class AuctionAlgorithm implements TransportationProblemSolver {
 
         performAssignmentPhase(
                 flowMatrix,
-                sinkArray,
-                bidMap
+                bidMap,
+                sinkArray.length
         );
     }
 

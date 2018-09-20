@@ -6,6 +6,8 @@ import java.util.stream.IntStream;
 
 import static com.netcracker.utils.GeneralUtils.doubleEquals;
 import static com.netcracker.utils.GeneralUtils.intMatrixToString;
+import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
+import static java.awt.SystemColor.info;
 import static java.lang.String.format;
 import static java.lang.System.arraycopy;
 import static java.util.stream.Collectors.toList;
@@ -41,6 +43,12 @@ public class FlowMatrix {
 
     public Flow getFlow(int sourceIndex,
                         int sinkIndex) {
+        if (sourceIndex >= sourceAmount) {
+            throw new IllegalArgumentException("Source " + sourceIndex + " does not exist");
+        }
+        if (sinkIndex >= sinkAmount) {
+            throw new IllegalArgumentException("Sink " + sinkIndex + " does not exist");
+        }
         if (sourceIndex < 0) {
             int volume = unusedVolumeArray[sinkIndex];
             return new Flow(
@@ -81,19 +89,23 @@ public class FlowMatrix {
     public void decreaseVolumeForFlow(int sourceIndex,
                                       int sinkIndex,
                                       int volumeDecrease) {
-        if (sourceIndex < 0) {
-            int newVolume = unusedVolumeArray[sinkIndex] - volumeDecrease;
-            if (newVolume >= 0) {
-                unusedVolumeArray[sinkIndex] = newVolume;
-            } else {
-                throw new IllegalStateException("Volume can't be negative");
-            }
-        } else {
+        if (sourceIndex >= 0) {
             int newVolume = volumeMatrix[sourceIndex][sinkIndex] - volumeDecrease;
             if (newVolume >= 0) {
+                info("Decreasing flow (%d, %d) from %d to %d", sourceIndex, sinkIndex, volumeMatrix[sourceIndex][sinkIndex], newVolume);
                 volumeMatrix[sourceIndex][sinkIndex] = newVolume;
             } else {
-                throw new IllegalStateException("Volume can't be negative");
+                String message = format("Attempted to reduce volume of the flow (%d, %d) by %d, while it holds only %d", sourceIndex, sinkIndex, volumeDecrease, volumeMatrix[sourceIndex][sinkIndex]);
+                throw new IllegalStateException(message);
+            }
+        } else {
+            int newVolume = unusedVolumeArray[sinkIndex] - volumeDecrease;
+            if (newVolume >= 0) {
+                info("Decreasing unused flow (%d) from %d to %d", sinkIndex, unusedVolumeArray[sinkIndex], newVolume);
+                unusedVolumeArray[sinkIndex] = newVolume;
+            } else {
+                String message = format("Attempted to reduce volume of the unused flow (%d) by %d, while it holds only %d", sinkIndex, volumeDecrease, unusedVolumeArray[sinkIndex]);
+                throw new IllegalStateException(message);
             }
         }
     }
@@ -126,7 +138,7 @@ public class FlowMatrix {
         );
     }
 
-    public List<Flow> getCurrentFlowList(int sourceIndex) {
+    public List<Flow> getCurrentFlowListForSource(int sourceIndex) {
         return IntStream
                 .range(0, sinkAmount)
                 .boxed()
@@ -135,7 +147,26 @@ public class FlowMatrix {
                 .collect(toList());
     }
 
-    public List<Flow> getAvailableFlowList(int sourceIndex) {
+    public List<Flow> getCurrentFlowListForSink(int sinkIndex) {
+        List<Flow> usedFlowList =
+                IntStream
+                        .range(0, sourceAmount)
+                        .boxed()
+                        .map(sourceIndex -> getFlow(sourceIndex, sinkIndex))
+                        .filter(Flow::isNotEmpty)
+                        .collect(toList());
+
+        Flow unusedFlow = getUnusedFlow(sinkIndex);
+
+        usedFlowList.add(unusedFlow);
+        return usedFlowList;
+    }
+
+    public int getMaxVolumeForSink(int sinkIndex) {
+        return sinkArray[sinkIndex];
+    }
+
+    public List<Flow> getAvailableFlowListForSink(int sourceIndex) {
         List<Flow> flowList = new ArrayList<>();
         for (int i = 0; i < sourceAmount; i++) {
             if (i == sourceIndex) {
@@ -157,37 +188,49 @@ public class FlowMatrix {
         return flowList;
     }
 
-    public void resetVolumeMatrix() {
-        for (int i = 0; i < sourceAmount; i++) {
-            for (int j = 0; j < sinkAmount; j++) {
-                volumeMatrix[i][j] = 0;
-            }
-        }
-    }
-
-    public void resetUnusedFlowArray() {
-        for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
-            int totalVolume = sinkArray[sinkIndex];
-            int usedVolume = 0;
-            for (int sourseIndex = 0; sourseIndex < sourceAmount; sourseIndex++) {
-                usedVolume += volumeMatrix[sourseIndex][sinkIndex];
-            }
-            unusedVolumeArray[sinkIndex] = totalVolume - usedVolume;
+    public void resetFlowVolumeForSink(int sinkIndex) {
+        for (int sourceIndex = 0; sourceIndex < sourceAmount; sourceIndex++) {
+            volumeMatrix[sourceIndex][sinkIndex] = 0;
         }
     }
 
     public boolean isComplete() {
-        for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
-            double totalVolume = sinkArray[sinkIndex];
-            double usedVolume = 0.0;
-            for (int sourseIndex = 0; sourseIndex < sourceAmount; sourseIndex++) {
-                usedVolume += volumeMatrix[sourseIndex][sinkIndex];
-            }
-            if (!doubleEquals(totalVolume, usedVolume)) {
+        for (int sourceIndex = 0; sourceIndex < sourceAmount; sourceIndex++) {
+            int usedVolume = getUsedVolumeForSource(sourceIndex);
+            int maxVolume = sourceArray[sourceIndex];
+            if (maxVolume != usedVolume) {
                 return false;
             }
         }
         return true;
+    }
+
+    private int getUsedVolumeForSource(int sourceIndex) {
+        int usedVolume = 0;
+        for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
+            usedVolume += volumeMatrix[sourceIndex][sinkIndex];
+        }
+        return usedVolume;
+    }
+
+    private int getUsedVolumeForSink(int sinkIndex) {
+        int usedVolume = 0;
+        for (int sourseIndex = 0; sourseIndex < sourceAmount; sourseIndex++) {
+            usedVolume += volumeMatrix[sourseIndex][sinkIndex];
+        }
+        return usedVolume;
+    }
+
+    public void assertIsValid() {
+        for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
+            int maxVolume = sinkArray[sinkIndex];
+            int usedVolume = getUsedVolumeForSink(sinkIndex);
+            int unusedVolume = unusedVolumeArray[sinkIndex];
+            int totalVolume = usedVolume + unusedVolume;
+            if (totalVolume != maxVolume) {
+                throw new IllegalStateException("Volume matrix is invalid");
+            }
+        }
     }
 
     public String volumeMatrixToString() {

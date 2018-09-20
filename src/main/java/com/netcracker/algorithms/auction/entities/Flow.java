@@ -1,6 +1,5 @@
 package com.netcracker.algorithms.auction.entities;
 
-import java.util.List;
 import java.util.Objects;
 
 import static java.lang.Math.abs;
@@ -26,13 +25,6 @@ public class Flow {
     public static Flow createEmptyFlow(int sourceIndex,
                                        int sinkIndex) {
         return new Flow(sourceIndex, sinkIndex, 0, 0.0);
-    }
-
-    public static Integer getVolume(List<Flow> flowList) {
-        return flowList
-                .stream()
-                .map(Flow::getVolume)
-                .reduce(0, (total, volume) -> total += volume);
     }
 
     public int getSourceIndex() {

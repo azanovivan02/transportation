@@ -1,21 +1,17 @@
 package com.netcracker.algorithms.auction;
 
-import com.netcracker.algorithms.auction.entities.Bid;
-import com.netcracker.algorithms.auction.entities.BidMap;
-import com.netcracker.algorithms.auction.entities.Flow;
-import com.netcracker.algorithms.auction.entities.FlowMatrix;
+import com.netcracker.algorithms.auction.entities.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.netcracker.algorithms.auction.entities.Flow.getVolume;
+import static com.netcracker.algorithms.auction.entities.FlowUtils.getSublistWithTotalVolume;
+import static com.netcracker.algorithms.auction.entities.FlowUtils.getTotalVolume;
+import static com.netcracker.algorithms.auction.entities.FlowUtils.sortByValueAscending;
 import static com.netcracker.utils.GeneralUtils.doubleEquals;
 import static com.netcracker.utils.GeneralUtils.removeLast;
 import static com.netcracker.utils.io.AssertionUtils.customAssert;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
-import static java.util.Comparator.comparingDouble;
 
 public class BiddingPhaseUtils {
 
@@ -43,8 +39,8 @@ public class BiddingPhaseUtils {
                                           int totalVolume,
                                           Double epsilon,
                                           BidMap bidMap) {
-        List<Flow> availableFlowList = flowMatrix.getAvailableFlowList(sourceIndex);
-        List<Flow> currentFlowList = flowMatrix.getCurrentFlowList(sourceIndex);
+        List<Flow> availableFlowList = flowMatrix.getAvailableFlowListForSink(sourceIndex);
+        List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSource(sourceIndex);
         int availableVolume = getAvailableVolume(totalVolume, currentFlowList);
         List<Flow> addedFlowList = getAddedFlowList(sourceIndex, availableFlowList, availableVolume, benefitMatrix);
 
@@ -52,7 +48,7 @@ public class BiddingPhaseUtils {
         List<Flow> desiredFlowList = addedFlowList;
 
         customAssert(
-                doubleEquals(getVolume(desiredFlowList), availableVolume)
+                doubleEquals(getTotalVolume(desiredFlowList), availableVolume)
         );
 
         Flow secondBestFlow = removeLast(availableFlowList);
@@ -104,36 +100,20 @@ public class BiddingPhaseUtils {
                                                List<Flow> availableFlowList,
                                                int availableVolume,
                                                int[][] benefitMatrix) {
-        sortByValueAscending(availableFlowList, sourceIndex, benefitMatrix);
-        verifyThatSortedByValue(availableFlowList, sourceIndex, benefitMatrix);
-        List<Flow> addedFlows = new ArrayList<>();
-        int addedVolume = 0;
-        while (addedVolume < availableVolume) {
-            Flow flow = removeLast(availableFlowList);
-            customAssert(flow != null, "Source can't consume more than all available flows");
-            int remainingVolume = availableVolume - addedVolume;
-            double volume = flow.getVolume();
-            if (volume <= remainingVolume) {
-                addedVolume += volume;
-                addedFlows.add(flow);
-            } else {
-                Flow splittedFlow = flow.split(remainingVolume);
-                if (!addedFlows.isEmpty()) {
-                    availableFlowList.add(flow);
-                }
-                addedVolume += remainingVolume;
-                addedFlows.add(splittedFlow);
-            }
-        }
-        customAssert(doubleEquals(addedVolume, availableVolume));
-        return addedFlows;
-    }
-
-    private static void sortByValueAscending(List<Flow> flowList,
-                                             int sourceIndex,
-                                             int[][] benefitMatrix) {
-        Comparator<Flow> profitComparator = comparingDouble(flow -> flow.getValue(sourceIndex, benefitMatrix));
-        flowList.sort(profitComparator);
+        sortByValueAscending(
+                availableFlowList,
+                sourceIndex,
+                benefitMatrix
+        );
+        verifyThatSortedByValue(
+                availableFlowList,
+                sourceIndex,
+                benefitMatrix
+        );
+        return getSublistWithTotalVolume(
+                availableFlowList,
+                availableVolume
+        );
     }
 
     private static void verifyThatSortedByValue(List<Flow> flowList,
@@ -158,7 +138,7 @@ public class BiddingPhaseUtils {
 
     private static int getAvailableVolume(int totalVolume,
                                              List<Flow> currentFlowList) {
-        int currentVolume = getVolume(currentFlowList);
+        int currentVolume = getTotalVolume(currentFlowList);
         return totalVolume - currentVolume;
     }
 }

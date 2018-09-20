@@ -12,8 +12,8 @@ public class ProblemSupplier {
 
     public static List<TransportationProblem> createProblemList() {
         return asList(
-//                createSmallProblem(),
-//                createMediumProblem(),
+//                createSmallProblem()
+//                createMediumProblem()
                 createLargeProblem()
         );
     }

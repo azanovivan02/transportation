@@ -54,6 +54,12 @@ public class GeneralUtils {
         }
     }
 
+    public static <E> void prettyPrintList(List<E> list, String leadingPart) {
+        for (E elem : list) {
+            System.out.println(leadingPart + elem);
+        }
+    }
+
     @SafeVarargs
     public static <E> List<E> merge(List<E>... listArray) {
         List<E> mergedList = new ArrayList<>();
