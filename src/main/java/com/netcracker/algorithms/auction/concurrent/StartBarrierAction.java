@@ -26,8 +26,10 @@ public class StartBarrierAction implements Runnable {
     public void run() {
         bidSet.clear();
         currentSourceIndex.set(-1);
-        if(flowMatrix.isComplete()){
-            flowMatrixIsComplete.set(true);
+        synchronized (flowMatrix) {
+            if (flowMatrix.isComplete()) {
+                flowMatrixIsComplete.set(true);
+            }
         }
     }
 }

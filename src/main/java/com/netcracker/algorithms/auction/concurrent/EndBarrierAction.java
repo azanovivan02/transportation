@@ -25,25 +25,27 @@ public class EndBarrierAction implements Runnable {
 
     @Override
     public void run() {
-        Comparator<Bid> bidComparator = comparingDouble(Bid::getBidValue);
-        for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
+        synchronized (flowMatrix) {
+            Comparator<Bid> bidComparator = comparingDouble(Bid::getBidValue);
+            for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
 
-            final int currentSinkIndex = sinkIndex;
+                final int currentSinkIndex = sinkIndex;
 
-            List<Bid> bidList = bidSet
-                    .stream()
-                    .filter(bid -> bid.getSinkIndex() == currentSinkIndex)
-                    .collect(toList());
+                List<Bid> bidList = bidSet
+                        .stream()
+                        .filter(bid -> bid.getSinkIndex() == currentSinkIndex)
+                        .collect(toList());
 
-            bidList.sort(bidComparator);
-            info("\n=== Processing bids for sink %d ==============\n", sinkIndex);
+                bidList.sort(bidComparator);
+                info("\n=== Processing bids for sink %d ==============\n", sinkIndex);
 
-            List<Bid> acceptedBidList = chooseBidsToAccept(sinkIndex, flowMatrix, bidList);
-            Integer acceptedBidVolume = getTotalVolume(acceptedBidList);
-            removeLeastExpensiveFlows(sinkIndex, flowMatrix, acceptedBidVolume);
-            addFlowsForAcceptedBids(sinkIndex, flowMatrix, acceptedBidList);
+                List<Bid> acceptedBidList = chooseBidsToAccept(sinkIndex, flowMatrix, bidList);
+                Integer acceptedBidVolume = getTotalVolume(acceptedBidList);
+                removeLeastExpensiveFlows(sinkIndex, flowMatrix, acceptedBidVolume);
+                addFlowsForAcceptedBids(sinkIndex, flowMatrix, acceptedBidList);
 
-            assertThatNewVolumeIsCorrect(sinkIndex, flowMatrix);
+                assertThatNewVolumeIsCorrect(sinkIndex, flowMatrix);
+            }
         }
     }
 }

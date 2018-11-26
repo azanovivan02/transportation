@@ -65,7 +65,7 @@ public class BiddingRunnable implements Runnable {
 
             awaitBarrier(startBarrier);
 
-            if(flowMatrixIsComplete.get()){
+            if (flowMatrixIsComplete.get()) {
                 break;
             }
 
@@ -74,11 +74,19 @@ public class BiddingRunnable implements Runnable {
                 if (sourceIndex >= sourceArray.length) {
                     break;
                 }
+
                 info("Thread %d creating bids for source %d", id, sourceIndex);
 
-                List<Flow> availableFlowList = flowMatrix.getAvailableFlowListForSink(sourceIndex);
-                List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSource(sourceIndex);
-                int availableVolume = getAvailableVolume(sourceArray[sourceIndex], currentFlowList);
+                List<Flow> availableFlowList;
+                List<Flow> currentFlowList;
+                synchronized (flowMatrix) {
+                    availableFlowList = flowMatrix.getAvailableFlowListForSink(sourceIndex);
+                    currentFlowList = flowMatrix.getCurrentFlowListForSource(sourceIndex);
+                }
+
+                int sourceVolume = sourceArray[sourceIndex];
+
+                int availableVolume = getAvailableVolume(sourceVolume, currentFlowList);
 
                 List<Flow> desiredFlowList = getAddedFlowList(sourceIndex, availableFlowList, availableVolume, benefitMatrix);
 

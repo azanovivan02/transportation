@@ -34,19 +34,21 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
 
     @Override
     public Allocation findAllocation(TransportationProblem problem) {
+        // === immutable data ===============
         final Double epsilon = getEpsilon();
-
         final int[] sourceArray = problem.getSourceArray();
         final int[] sinkArray = problem.getSinkArray();
         final int[][] benefitMatrix = convertToBenefitMatrix(problem.getCostMatrix());
+
+        // === mutable date ===============
         final FlowMatrix flowMatrix = new FlowMatrix(sourceArray, sinkArray);
-
-        int runnableAmount = 4;
-
         final Set<Bid> bidSet = newSetFromMap(new ConcurrentHashMap<>());
         final AtomicInteger currentSourceIndex = new AtomicInteger();
         final AtomicBoolean assignmentIsComplete = new AtomicBoolean();
 
+        int runnableAmount = 4;
+
+        // === tasks ===============
         StartBarrierAction startBarrierAction = new StartBarrierAction(bidSet, currentSourceIndex, flowMatrix, assignmentIsComplete);
         final CyclicBarrier startBarrier = new CyclicBarrier(runnableAmount, startBarrierAction);
 
@@ -69,6 +71,7 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
             biddingRunnableList.add(biddingRunnable);
         }
 
+        // === execution ===============
         executeRunnableList(biddingRunnableList, EXECUTOR_THREAD_AMOUNT);
 
         info("=== Auction Iteration is finished =================");
