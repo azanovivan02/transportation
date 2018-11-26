@@ -14,18 +14,22 @@ import static java.util.stream.Collectors.toList;
 
 public class ConcurrentFlowMatrix {
 
+    // === immutable data ======
+
     public static final double UNUSED_PRICE = 0.0;
     public static final int UNUSED_SOURCE_INDEX = -1;
 
     private final int[] sourceArray;
     private final int[] sinkArray;
+    private final int sourceAmount;
+    private final int sinkAmount;
+
+    // === mutable data ======
 
     private final int[][] volumeMatrix;
     private final double[][] priceMatrix;
 
     private final int[] unusedVolumeArray;
-    private final int sourceAmount;
-    private final int sinkAmount;
 
     public ConcurrentFlowMatrix(int[] sourceArray,
                                 int[] sinkArray) {
@@ -41,7 +45,7 @@ public class ConcurrentFlowMatrix {
         this.unusedVolumeArray = createUnusedVolumeArray(sinkArray);
     }
 
-    // === Flow =====================================================
+    // === Both =====================================================
 
     public void increaseVolumeForFlow(int sourceIndex,
                                       int sinkIndex,
