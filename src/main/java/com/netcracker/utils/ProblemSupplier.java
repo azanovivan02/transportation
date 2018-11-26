@@ -9,12 +9,7 @@ import static java.util.Arrays.asList;
 
 public class ProblemSupplier {
 
-    public static List<TransportationProblem> createProblemList() {
-        return createFixedProblemList();
-//        return createRandomProblemList();
-    }
-
-    private static List<TransportationProblem> createFixedProblemList(){
+    public  static List<TransportationProblem> createFixedProblemList(){
         return asList(
                 createSmallProblem(),
                 createProblemFive()
@@ -24,11 +19,10 @@ public class ProblemSupplier {
         );
     }
 
-    private static List<TransportationProblem> createRandomProblemList(){
-
+    public static List<TransportationProblem> createRandomProblemList(int problemAmount, int problemSize){
         List<TransportationProblem> problemList = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            TransportationProblem problem = ProblemGenerator.generateProblem(100, 100);
+        for (int i = 0; i < problemAmount; i++) {
+            TransportationProblem problem = ProblemGenerator.generateProblem(problemSize, problemSize);
             problemList.add(problem);
         }
         return problemList;

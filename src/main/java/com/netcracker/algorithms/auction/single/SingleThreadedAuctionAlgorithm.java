@@ -14,15 +14,15 @@ import static com.netcracker.algorithms.auction.single.AssignmentPhaseUtils.perf
 import static com.netcracker.algorithms.auction.single.BiddingPhaseUtils.performBiddingPhase;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 
-public class AuctionAlgorithm implements TransportationProblemSolver {
+public class SingleThreadedAuctionAlgorithm implements TransportationProblemSolver {
 
     private final EpsilonSequenceProducer epsilonProducer;
 
-    public AuctionAlgorithm() {
+    public SingleThreadedAuctionAlgorithm() {
         this(new DefaultEpsilonSequenceProducer(1.0, 0.25));
     }
 
-    public AuctionAlgorithm(EpsilonSequenceProducer epsilonProducer) {
+    public SingleThreadedAuctionAlgorithm(EpsilonSequenceProducer epsilonProducer) {
         this.epsilonProducer = epsilonProducer;
     }
 

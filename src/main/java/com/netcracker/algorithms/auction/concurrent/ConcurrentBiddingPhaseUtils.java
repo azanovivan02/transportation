@@ -1,24 +1,25 @@
-package com.netcracker.algorithms.auction.single;
+package com.netcracker.algorithms.auction.concurrent;
 
-import com.netcracker.algorithms.auction.entities.*;
+import com.netcracker.algorithms.auction.entities.Bid;
+import com.netcracker.algorithms.auction.entities.BidMap;
+import com.netcracker.algorithms.auction.entities.Flow;
+import com.netcracker.algorithms.auction.entities.FlowMatrix;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.netcracker.algorithms.auction.entities.FlowUtils.getSublistWithTotalVolume;
-import static com.netcracker.algorithms.auction.entities.FlowUtils.getTotalVolume;
-import static com.netcracker.algorithms.auction.entities.FlowUtils.sortByValueAscending;
+import static com.netcracker.algorithms.auction.entities.FlowUtils.*;
 import static com.netcracker.utils.GeneralUtils.doubleEquals;
 import static com.netcracker.utils.GeneralUtils.removeLast;
 import static com.netcracker.utils.io.AssertionUtils.customAssert;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 
-public class BiddingPhaseUtils {
+public class ConcurrentBiddingPhaseUtils {
 
-    static BidMap performBiddingPhase(FlowMatrix flowMatrix,
-                                      int[][] benefitMatrix,
-                                      int[] sourceArray,
-                                      Double epsilon) {
+    static BidMap performConcurrentBiddingPhase(FlowMatrix flowMatrix,
+                                                int[][] benefitMatrix,
+                                                int[] sourceArray,
+                                                Double epsilon) {
         BidMap bidMap = new BidMap();
         for (int sourceIndex = 0; sourceIndex < sourceArray.length; sourceIndex++) {
             addBidsFromSource(
@@ -33,7 +34,7 @@ public class BiddingPhaseUtils {
         return bidMap;
     }
 
-    private static void addBidsFromSource(int sourceIndex,
+    static void addBidsFromSource(int sourceIndex,
                                           FlowMatrix flowMatrix,
                                           int[][] benefitMatrix,
                                           int totalVolume,
@@ -60,7 +61,7 @@ public class BiddingPhaseUtils {
         }
     }
 
-    private static Bid getBidForFlow(Flow desiredFlow,
+    static Bid getBidForFlow(Flow desiredFlow,
                                      int sourceIndex,
                                      int[] benefitMatrix,
                                      double secondBestFlowValue,
@@ -95,7 +96,7 @@ public class BiddingPhaseUtils {
         );
     }
 
-    private static List<Flow> getAddedFlowList(int sourceIndex,
+    static List<Flow> getAddedFlowList(int sourceIndex,
                                                List<Flow> availableFlowList,
                                                int availableVolume,
                                                int[][] benefitMatrix) {
@@ -115,7 +116,7 @@ public class BiddingPhaseUtils {
         );
     }
 
-    private static void verifyThatSortedByValue(List<Flow> flowList,
+    static void verifyThatSortedByValue(List<Flow> flowList,
                                                 int sourceIndex,
                                                 int[][] benefitMatrix) {
         List<Double> flowValueList =
@@ -132,7 +133,7 @@ public class BiddingPhaseUtils {
         }
     }
 
-    private static int getAvailableVolume(int totalVolume,
+    static int getAvailableVolume(int totalVolume,
                                           List<Flow> currentFlowList) {
         int currentVolume = getTotalVolume(currentFlowList);
         return totalVolume - currentVolume;

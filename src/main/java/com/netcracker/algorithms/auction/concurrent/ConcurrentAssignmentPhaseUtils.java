@@ -1,4 +1,4 @@
-package com.netcracker.algorithms.auction.single;
+package com.netcracker.algorithms.auction.concurrent;
 
 import com.netcracker.algorithms.auction.entities.*;
 
@@ -7,7 +7,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import static com.netcracker.algorithms.auction.entities.BidUtils.getTotalVolume;
-import static com.netcracker.algorithms.auction.entities.FlowUtils.*;
+import static com.netcracker.algorithms.auction.entities.FlowUtils.getSublistWithTotalVolume;
+import static com.netcracker.algorithms.auction.entities.FlowUtils.sortByPriceDescending;
 import static com.netcracker.utils.GeneralUtils.prettyPrintList;
 import static com.netcracker.utils.GeneralUtils.removeLast;
 import static com.netcracker.utils.io.AssertionUtils.customAssert;
@@ -15,9 +16,9 @@ import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 import static java.lang.String.format;
 import static java.util.Comparator.comparingDouble;
 
-public class AssignmentPhaseUtils {
+public class ConcurrentAssignmentPhaseUtils {
 
-    static void performSingleThreadedAssignmentPhase(FlowMatrix flowMatrix, BidMap bidMap, int sinkAmount) {
+    static void performConcurrentAssignmentPhase(FlowMatrix flowMatrix, BidMap bidMap, int sinkAmount) {
         Comparator<Bid> bidComparator = comparingDouble(Bid::getBidValue);
         for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
             List<Bid> bidList = bidMap.getBidsForSink(sinkIndex);
@@ -26,7 +27,7 @@ public class AssignmentPhaseUtils {
         }
     }
 
-    private static void performAssignmentPhaseForSingleSink(int sinkIndex, FlowMatrix flowMatrix, List<Bid> bidList) {
+    static void performAssignmentPhaseForSingleSink(int sinkIndex, FlowMatrix flowMatrix, List<Bid> bidList) {
         info("\n=== Processing bids for sink %d ==============\n", sinkIndex);
 
         List<Bid> acceptedBidList = chooseBidsToAccept(sinkIndex, flowMatrix, bidList);
@@ -37,7 +38,7 @@ public class AssignmentPhaseUtils {
         assertThatNewVolumeIsCorrect(sinkIndex, flowMatrix);
     }
 
-    private static void assertThatNewVolumeIsCorrect(int sinkIndex, FlowMatrix flowMatrix) {
+    static void assertThatNewVolumeIsCorrect(int sinkIndex, FlowMatrix flowMatrix) {
         List<Flow> newFlowList = flowMatrix.getCurrentFlowListForSink(sinkIndex);
         int newTotalVolume = FlowUtils.getTotalVolume(newFlowList);
 
@@ -46,7 +47,7 @@ public class AssignmentPhaseUtils {
         customAssert(newTotalVolume == maxVolume, message);
     }
 
-    private static void addFlowsForAcceptedBids(int sinkIndex, FlowMatrix flowMatrix, List<Bid> acceptedBidList) {
+    static void addFlowsForAcceptedBids(int sinkIndex, FlowMatrix flowMatrix, List<Bid> acceptedBidList) {
         for (Bid bid : acceptedBidList) {
             info("Processing bid: %s", bid);
             int bidderSourceIndex = bid.getBidderSourceIndex();
@@ -58,7 +59,7 @@ public class AssignmentPhaseUtils {
         }
     }
 
-    private static void removeLeastExpensiveFlows(int sinkIndex, FlowMatrix flowMatrix, Integer acceptedBidVolume) {
+    static void removeLeastExpensiveFlows(int sinkIndex, FlowMatrix flowMatrix, Integer acceptedBidVolume) {
         List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSink(sinkIndex);
         sortByPriceDescending(currentFlowList);
 
@@ -80,7 +81,7 @@ public class AssignmentPhaseUtils {
         }
     }
 
-    private static List<Bid> chooseBidsToAccept(int sinkIndex, FlowMatrix flowMatrix, List<Bid> bidList) {
+    static List<Bid> chooseBidsToAccept(int sinkIndex, FlowMatrix flowMatrix, List<Bid> bidList) {
         int maxVolume = flowMatrix.getMaxVolumeForSink(sinkIndex);
 
         List<Bid> acceptedBidList = new ArrayList<>();
@@ -116,7 +117,7 @@ public class AssignmentPhaseUtils {
         return acceptedBidList;
     }
 
-    private static void assertThatOwnerHasRequiredVolume(FlowMatrix flowMatrix, int sinkIndex, Bid bid, int volume) {
+    static void assertThatOwnerHasRequiredVolume(FlowMatrix flowMatrix, int sinkIndex, Bid bid, int volume) {
         int ownerSourceIndex = bid.getOwnerSourceIndex();
         int currentlyOwnedVolume = flowMatrix.getFlow(ownerSourceIndex, sinkIndex).getVolume();
         if (currentlyOwnedVolume < volume) {
