@@ -7,18 +7,17 @@ import com.netcracker.algorithms.auction.entities.*;
 import com.netcracker.algorithms.auction.epsilonScaling.DefaultEpsilonSequenceProducer;
 import com.netcracker.algorithms.auction.epsilonScaling.EpsilonSequenceProducer;
 
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.netcracker.algorithms.auction.concurrent.ConcurrentBiddingPhaseUtils.createBidForFlow;
 import static com.netcracker.algorithms.auction.concurrent.ConcurrentUtils.*;
 import static com.netcracker.algorithms.auction.entities.FlowUtils.getTotalVolume;
 import static com.netcracker.utils.GeneralUtils.doubleEquals;
 import static com.netcracker.utils.GeneralUtils.removeLast;
 import static com.netcracker.utils.io.AssertionUtils.customAssert;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
-import static java.util.Comparator.comparingDouble;
 
 public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
 
@@ -44,99 +43,43 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
         final int[] sinkArray = problem.getSinkArray();
         final int[][] costMatrix = problem.getCostMatrix();
         final int[][] benefitMatrix = TransportationProblem.convertToBenefitMatrix(costMatrix);
-
         final FlowMatrix flowMatrix = new FlowMatrix(sourceArray, sinkArray);
 
         int runnableAmount = 4;
 
-        final BidMap bidMap = new BidMap();
+        final Set<Bid> bidSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
         final AtomicInteger currentSourceIndex = new AtomicInteger();
 
-        final CyclicBarrier startBarrier = new CyclicBarrier(runnableAmount, ()->{
-            synchronized (bidMap) {
-                bidMap.clear();
-            }
-            currentSourceIndex.set(-1);
-        });
+        StartBarrierAction startBarrierAction = new StartBarrierAction(bidSet, currentSourceIndex);
+        final CyclicBarrier startBarrier = new CyclicBarrier(runnableAmount, startBarrierAction);
 
-        final CyclicBarrier endBarrier = new CyclicBarrier(runnableAmount, ()->{
-            Comparator<Bid> bidComparator = comparingDouble(Bid::getBidValue);
-            for (int sinkIndex = 0; sinkIndex < sinkArray.length; sinkIndex++) {
+        EndBarrierAction endBarrierAction = new EndBarrierAction(flowMatrix, bidSet, sinkArray);
+        final CyclicBarrier endBarrier = new CyclicBarrier(runnableAmount, endBarrierAction);
 
-                List<Bid> bidList;
-                synchronized (bidMap) {
-                    bidList = bidMap.getBidsForSink(sinkIndex);
-                }
-
-                bidList.sort(bidComparator);
-                info("\n=== Processing bids for sink %d ==============\n", sinkIndex);
-
-                List<Bid> acceptedBidList = ConcurrentAssignmentPhaseUtils.chooseBidsToAccept(sinkIndex, flowMatrix, bidList);
-                Integer acceptedBidVolume = BidUtils.getTotalVolume(acceptedBidList);
-                ConcurrentAssignmentPhaseUtils.removeLeastExpensiveFlows(sinkIndex, flowMatrix, acceptedBidVolume);
-                ConcurrentAssignmentPhaseUtils.addFlowsForAcceptedBids(sinkIndex, flowMatrix, acceptedBidList);
-
-                ConcurrentAssignmentPhaseUtils.assertThatNewVolumeIsCorrect(sinkIndex, flowMatrix);
-            }
-        });
-
-        Runnable biddingRunnable = () -> {
-            int iterationNumber = 0;
-            while (!flowMatrix.isComplete()) {
-                info("\n=== Iteration: %d ======================\n", iterationNumber);
-                iterationNumber++;
-
-                awaitBarrier(startBarrier);
-
-                // === Biding =========================================================================================================================================
-
-                while (true) {
-                    int sourceIndex = currentSourceIndex.incrementAndGet();
-                    if(sourceIndex >= sourceArray.length) {
-                        break;
-                    }
-
-                    List<Flow> availableFlowList = flowMatrix.getAvailableFlowListForSink(sourceIndex);
-                    List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSource(sourceIndex);
-                    int availableVolume = ConcurrentBiddingPhaseUtils.getAvailableVolume(sourceArray[sourceIndex], currentFlowList);
-
-                    List<Flow> desiredFlowList = ConcurrentBiddingPhaseUtils.getAddedFlowList(sourceIndex, availableFlowList, availableVolume, benefitMatrix);
-
-                    customAssert(
-                            doubleEquals(getTotalVolume(desiredFlowList), availableVolume)
-                    );
-
-                    Flow secondBestFlow = removeLast(availableFlowList);
-                    double secondBestFlowPrice = secondBestFlow.getPrice();
-                    int secondBestFlowSinkIndex = secondBestFlow.getSinkIndex();
-                    double secondBestFlowValue = benefitMatrix[sourceIndex][secondBestFlowSinkIndex] - secondBestFlowPrice;
-
-                    for (Flow desiredFlow : desiredFlowList) {
-                        Bid bid = ConcurrentBiddingPhaseUtils.getBidForFlow(desiredFlow, sourceIndex, benefitMatrix[sourceIndex], secondBestFlowValue, epsilon, secondBestFlow);
-                        synchronized (bidMap) {
-                            bidMap.add(bid);
-                        }
-                    }
-                }
-
-                awaitBarrier(endBarrier);
-            }
-        };
+        List<Runnable> biddingRunnableList = new ArrayList<>();
+        for (int runnable_id = 0; runnable_id < runnableAmount; runnable_id++) {
+            Runnable biddingRunnable = new BiddingRunnable(
+                    runnable_id,
+                    epsilon,
+                    sourceArray,
+                    benefitMatrix,
+                    flowMatrix,
+                    bidSet,
+                    currentSourceIndex,
+                    startBarrier,
+                    endBarrier
+            );
+            biddingRunnableList.add(biddingRunnable);
+        }
 
         ExecutorService executor = Executors.newFixedThreadPool(EXECUTOR_THREAD_AMOUNT);
-
-//        Future<?> future = executor.submit(biddingRunnable);
-//        getFutureResult(future);
-
-        List<Future<?>> futureList = submitRunnableSeveralTimes(biddingRunnable, runnableAmount, executor);
+        List<Future<?>> futureList = submitRunnableList(biddingRunnableList, executor);
         getFutureList(futureList);
-
         executor.shutdown();
 
         info("=== Auction Iteration is finished =================");
         info("Result matrix\n");
         info(flowMatrix.volumeMatrixToString());
-
         flowMatrix.assertIsValid();
 
         int[][] volumeMatrix = flowMatrix.getVolumeMatrix();

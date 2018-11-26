@@ -16,12 +16,12 @@ import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 
 public class ConcurrentBiddingPhaseUtils {
 
-    static Bid getBidForFlow(Flow desiredFlow,
-                                     int sourceIndex,
-                                     int[] benefitMatrix,
-                                     double secondBestFlowValue,
-                                     Double epsilon,
-                                     Flow secondBestFlow) {
+    static Bid createBidForFlow(Flow desiredFlow,
+                                int sourceIndex,
+                                int[] benefitMatrix,
+                                double secondBestFlowValue,
+                                Double epsilon,
+                                Flow secondBestFlow) {
         int desiredFlowOwnerSourceIndex = desiredFlow.getSourceIndex();
         int desiredFlowSinkIndex = desiredFlow.getSinkIndex();
         int desiredFlowVolume = desiredFlow.getVolume();
