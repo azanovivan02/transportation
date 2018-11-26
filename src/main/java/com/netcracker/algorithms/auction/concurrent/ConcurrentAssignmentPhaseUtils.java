@@ -18,26 +18,6 @@ import static java.util.Comparator.comparingDouble;
 
 public class ConcurrentAssignmentPhaseUtils {
 
-    static void performConcurrentAssignmentPhase(FlowMatrix flowMatrix, BidMap bidMap, int sinkAmount) {
-        Comparator<Bid> bidComparator = comparingDouble(Bid::getBidValue);
-        for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
-            List<Bid> bidList = bidMap.getBidsForSink(sinkIndex);
-            bidList.sort(bidComparator);
-            performAssignmentPhaseForSingleSink(sinkIndex, flowMatrix, bidList);
-        }
-    }
-
-    static void performAssignmentPhaseForSingleSink(int sinkIndex, FlowMatrix flowMatrix, List<Bid> bidList) {
-        info("\n=== Processing bids for sink %d ==============\n", sinkIndex);
-
-        List<Bid> acceptedBidList = chooseBidsToAccept(sinkIndex, flowMatrix, bidList);
-        Integer acceptedBidVolume = getTotalVolume(acceptedBidList);
-        removeLeastExpensiveFlows(sinkIndex, flowMatrix, acceptedBidVolume);
-        addFlowsForAcceptedBids(sinkIndex, flowMatrix, acceptedBidList);
-
-        assertThatNewVolumeIsCorrect(sinkIndex, flowMatrix);
-    }
-
     static void assertThatNewVolumeIsCorrect(int sinkIndex, FlowMatrix flowMatrix) {
         List<Flow> newFlowList = flowMatrix.getCurrentFlowListForSink(sinkIndex);
         int newTotalVolume = FlowUtils.getTotalVolume(newFlowList);

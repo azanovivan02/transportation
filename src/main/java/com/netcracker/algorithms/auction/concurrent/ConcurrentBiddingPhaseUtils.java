@@ -16,51 +16,6 @@ import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 
 public class ConcurrentBiddingPhaseUtils {
 
-    static BidMap performConcurrentBiddingPhase(FlowMatrix flowMatrix,
-                                                int[][] benefitMatrix,
-                                                int[] sourceArray,
-                                                Double epsilon) {
-        BidMap bidMap = new BidMap();
-        for (int sourceIndex = 0; sourceIndex < sourceArray.length; sourceIndex++) {
-            addBidsFromSource(
-                    sourceIndex,
-                    flowMatrix,
-                    benefitMatrix,
-                    sourceArray[sourceIndex],
-                    epsilon,
-                    bidMap
-            );
-        }
-        return bidMap;
-    }
-
-    static void addBidsFromSource(int sourceIndex,
-                                          FlowMatrix flowMatrix,
-                                          int[][] benefitMatrix,
-                                          int totalVolume,
-                                          Double epsilon,
-                                          BidMap bidMap) {
-        List<Flow> availableFlowList = flowMatrix.getAvailableFlowListForSink(sourceIndex);
-        List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSource(sourceIndex);
-        int availableVolume = getAvailableVolume(totalVolume, currentFlowList);
-
-        List<Flow> desiredFlowList = getAddedFlowList(sourceIndex, availableFlowList, availableVolume, benefitMatrix);
-
-        customAssert(
-                doubleEquals(getTotalVolume(desiredFlowList), availableVolume)
-        );
-
-        Flow secondBestFlow = removeLast(availableFlowList);
-        double secondBestFlowPrice = secondBestFlow.getPrice();
-        int secondBestFlowSinkIndex = secondBestFlow.getSinkIndex();
-        double secondBestFlowValue = benefitMatrix[sourceIndex][secondBestFlowSinkIndex] - secondBestFlowPrice;
-
-        for (Flow desiredFlow : desiredFlowList) {
-            Bid bid = getBidForFlow(desiredFlow, sourceIndex, benefitMatrix[sourceIndex], secondBestFlowValue, epsilon, secondBestFlow);
-            bidMap.add(bid);
-        }
-    }
-
     static Bid getBidForFlow(Flow desiredFlow,
                                      int sourceIndex,
                                      int[] benefitMatrix,

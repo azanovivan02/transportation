@@ -40,4 +40,8 @@ public class BidMap {
                 .mapToInt(Integer::intValue)
                 .sum();
     }
+
+    public void clear() {
+        bidMap.clear();
+    }
 }
