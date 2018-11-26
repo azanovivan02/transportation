@@ -4,11 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static java.util.stream.Collectors.toList;
 
 public class ConcurrentUtils {
+
+    public static void executeRunnableList(List<Runnable> biddingRunnableList, int executorThreadAmount) {
+        ExecutorService executor = Executors.newFixedThreadPool(executorThreadAmount);
+        List<Future<?>> futureList = submitRunnableList(biddingRunnableList, executor);
+        getFutureList(futureList);
+        executor.shutdown();
+    }
 
     public static void awaitBarrier(CyclicBarrier startBarrier) {
         try {

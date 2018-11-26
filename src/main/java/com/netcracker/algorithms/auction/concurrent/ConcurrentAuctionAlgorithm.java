@@ -11,11 +11,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.netcracker.algorithms.auction.concurrent.ConcurrentBiddingPhaseUtils.createBidForFlow;
-import static com.netcracker.algorithms.auction.concurrent.ConcurrentUtils.*;
-import static com.netcracker.algorithms.auction.entities.FlowUtils.getTotalVolume;
-import static com.netcracker.utils.GeneralUtils.doubleEquals;
-import static com.netcracker.utils.GeneralUtils.removeLast;
+import static com.netcracker.algorithms.auction.concurrent.ConcurrentUtils.executeRunnableList;
 import static com.netcracker.utils.io.AssertionUtils.customAssert;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 
@@ -53,7 +49,7 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
         StartBarrierAction startBarrierAction = new StartBarrierAction(bidSet, currentSourceIndex);
         final CyclicBarrier startBarrier = new CyclicBarrier(runnableAmount, startBarrierAction);
 
-        EndBarrierAction endBarrierAction = new EndBarrierAction(flowMatrix, bidSet, sinkArray);
+        EndBarrierAction endBarrierAction = new EndBarrierAction(flowMatrix, bidSet, sinkArray.length);
         final CyclicBarrier endBarrier = new CyclicBarrier(runnableAmount, endBarrierAction);
 
         List<Runnable> biddingRunnableList = new ArrayList<>();
@@ -72,10 +68,7 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
             biddingRunnableList.add(biddingRunnable);
         }
 
-        ExecutorService executor = Executors.newFixedThreadPool(EXECUTOR_THREAD_AMOUNT);
-        List<Future<?>> futureList = submitRunnableList(biddingRunnableList, executor);
-        getFutureList(futureList);
-        executor.shutdown();
+        executeRunnableList(biddingRunnableList, EXECUTOR_THREAD_AMOUNT);
 
         info("=== Auction Iteration is finished =================");
         info("Result matrix\n");

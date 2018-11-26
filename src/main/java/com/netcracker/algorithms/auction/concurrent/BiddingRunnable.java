@@ -64,6 +64,7 @@ public class BiddingRunnable implements Runnable {
                 if (sourceIndex >= sourceArray.length) {
                     break;
                 }
+                info("Thread %d creating bids for source %d", id, sourceIndex);
 
                 List<Flow> availableFlowList = flowMatrix.getAvailableFlowListForSink(sourceIndex);
                 List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSource(sourceIndex);
@@ -81,7 +82,14 @@ public class BiddingRunnable implements Runnable {
                 double secondBestFlowValue = benefitMatrix[sourceIndex][secondBestFlowSinkIndex] - secondBestFlowPrice;
 
                 for (Flow desiredFlow : desiredFlowList) {
-                    Bid bid = createBidForFlow(desiredFlow, sourceIndex, benefitMatrix[sourceIndex], secondBestFlowValue, epsilon, secondBestFlow);
+                    Bid bid = createBidForFlow(
+                            desiredFlow,
+                            sourceIndex,
+                            benefitMatrix[sourceIndex],
+                            secondBestFlowValue,
+                            epsilon,
+                            secondBestFlow
+                    );
                     bidSet.add(bid);
                 }
             }

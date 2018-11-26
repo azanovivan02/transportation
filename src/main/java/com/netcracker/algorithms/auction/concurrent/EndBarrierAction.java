@@ -1,11 +1,12 @@
 package com.netcracker.algorithms.auction.concurrent;
 
 import com.netcracker.algorithms.auction.entities.Bid;
-import com.netcracker.algorithms.auction.entities.BidUtils;
 import com.netcracker.algorithms.auction.entities.FlowMatrix;
 
 import java.util.*;
 
+import static com.netcracker.algorithms.auction.concurrent.ConcurrentAssignmentPhaseUtils.*;
+import static com.netcracker.algorithms.auction.entities.BidUtils.getTotalVolume;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
@@ -14,19 +15,18 @@ public class EndBarrierAction implements Runnable {
 
     final FlowMatrix flowMatrix;
     final Set<Bid> bidSet;
-    final int[] sinkArray;
+    final int sinkAmount;
 
-    public EndBarrierAction(FlowMatrix flowMatrix, Set<Bid> bidSet, int[] sinkArray) {
+    public EndBarrierAction(FlowMatrix flowMatrix, Set<Bid> bidSet, int sinkAmount) {
         this.flowMatrix = flowMatrix;
         this.bidSet = bidSet;
-        this.sinkArray = sinkArray;
+        this.sinkAmount = sinkAmount;
     }
 
     @Override
     public void run() {
         Comparator<Bid> bidComparator = comparingDouble(Bid::getBidValue);
-        Map<Integer, List<Bid>> bidMap = new HashMap<>();
-        for (int sinkIndex = 0; sinkIndex < sinkArray.length; sinkIndex++) {
+        for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
 
             final int currentSinkIndex = sinkIndex;
 
@@ -38,12 +38,12 @@ public class EndBarrierAction implements Runnable {
             bidList.sort(bidComparator);
             info("\n=== Processing bids for sink %d ==============\n", sinkIndex);
 
-            List<Bid> acceptedBidList = ConcurrentAssignmentPhaseUtils.chooseBidsToAccept(sinkIndex, flowMatrix, bidList);
-            Integer acceptedBidVolume = BidUtils.getTotalVolume(acceptedBidList);
-            ConcurrentAssignmentPhaseUtils.removeLeastExpensiveFlows(sinkIndex, flowMatrix, acceptedBidVolume);
-            ConcurrentAssignmentPhaseUtils.addFlowsForAcceptedBids(sinkIndex, flowMatrix, acceptedBidList);
+            List<Bid> acceptedBidList = chooseBidsToAccept(sinkIndex, flowMatrix, bidList);
+            Integer acceptedBidVolume = getTotalVolume(acceptedBidList);
+            removeLeastExpensiveFlows(sinkIndex, flowMatrix, acceptedBidVolume);
+            addFlowsForAcceptedBids(sinkIndex, flowMatrix, acceptedBidList);
 
-            ConcurrentAssignmentPhaseUtils.assertThatNewVolumeIsCorrect(sinkIndex, flowMatrix);
+            assertThatNewVolumeIsCorrect(sinkIndex, flowMatrix);
         }
     }
 }
