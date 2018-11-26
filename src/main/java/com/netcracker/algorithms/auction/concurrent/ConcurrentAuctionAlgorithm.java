@@ -12,8 +12,7 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.netcracker.algorithms.auction.concurrent.ConcurrentUtils.awaitBarrier;
-import static com.netcracker.algorithms.auction.concurrent.ConcurrentUtils.getFutureResult;
+import static com.netcracker.algorithms.auction.concurrent.ConcurrentUtils.*;
 import static com.netcracker.algorithms.auction.entities.FlowUtils.getTotalVolume;
 import static com.netcracker.utils.GeneralUtils.doubleEquals;
 import static com.netcracker.utils.GeneralUtils.removeLast;
@@ -23,7 +22,8 @@ import static java.util.Comparator.comparingDouble;
 
 public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
 
-    public static final int EXECUTOR_THREAD_AMOUNT = 2;
+    public static final int EXECUTOR_THREAD_AMOUNT = 8;
+
     private final EpsilonSequenceProducer epsilonProducer;
 
     public ConcurrentAuctionAlgorithm() {
@@ -47,8 +47,7 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
 
         final FlowMatrix flowMatrix = new FlowMatrix(sourceArray, sinkArray);
 
-        int runnableAmount = 1;
-        ExecutorService executor = Executors.newFixedThreadPool(EXECUTOR_THREAD_AMOUNT);
+        int runnableAmount = 4;
 
         final BidMap bidMap = new BidMap();
         final AtomicInteger currentSourceIndex = new AtomicInteger();
@@ -81,7 +80,7 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
             }
         });
 
-        Runnable singleRunnable = () -> {
+        Runnable biddingRunnable = () -> {
             int iterationNumber = 0;
             while (!flowMatrix.isComplete()) {
                 info("\n=== Iteration: %d ======================\n", iterationNumber);
@@ -120,16 +119,17 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
                     }
                 }
 
-                synchronized (bidMap) {
-                    customAssert(bidMap.size() != 0, "No new bids");
-                }
-
                 awaitBarrier(endBarrier);
             }
         };
 
-        Future<?> future = executor.submit(singleRunnable);
-        getFutureResult(future);
+        ExecutorService executor = Executors.newFixedThreadPool(EXECUTOR_THREAD_AMOUNT);
+
+//        Future<?> future = executor.submit(biddingRunnable);
+//        getFutureResult(future);
+
+        List<Future<?>> futureList = submitRunnableSeveralTimes(biddingRunnable, runnableAmount, executor);
+        getFutureList(futureList);
 
         executor.shutdown();
 
