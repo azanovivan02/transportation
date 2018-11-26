@@ -13,9 +13,10 @@ import static com.netcracker.utils.ProblemSupplier.createProblemList;
 import static com.netcracker.utils.SolverSupplier.createSolverMap;
 import static com.netcracker.utils.io.ResultPrinter.printResults;
 
-public class DefaultRunner {
+public class ModiComparisonTestRunner implements TestRunner {
 
-    public static void run() {
+    @Override
+    public void run() {
         List<TransportationProblem> problemList = createProblemList();
 
         Map<String, TransportationProblemSolver> solverMap = createSolverMap();
@@ -46,13 +47,13 @@ public class DefaultRunner {
                         solverEntry -> findAllocationUsingOneSolver(problem, solverEntry.getValue())
                 ));
 
-//        int sourceAmount = problem.getSourceArray().length;
-//        int sinkAmount = problem.getSinkArray().length;
-//        assertThatAllocationsAreIdentical(
-//                allocationsForProblem,
-//                sourceAmount,
-//                sinkAmount
-//        );
+        int sourceAmount = problem.getSourceArray().length;
+        int sinkAmount = problem.getSinkArray().length;
+        assertThatAllocationsAreIdentical(
+                allocationsForProblem,
+                sourceAmount,
+                sinkAmount
+        );
 
         return allocationsForProblem;
     }

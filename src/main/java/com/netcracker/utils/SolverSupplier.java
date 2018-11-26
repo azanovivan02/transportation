@@ -1,7 +1,7 @@
 package com.netcracker.utils;
 
 import com.netcracker.algorithms.TransportationProblemSolver;
-import com.netcracker.algorithms.auction.AuctionAlgorithm;
+import com.netcracker.algorithms.auction.single.AuctionAlgorithm;
 import com.netcracker.algorithms.modi.ModiMethod;
 
 import java.util.LinkedHashMap;
@@ -13,7 +13,7 @@ public class SolverSupplier {
         Map<String, TransportationProblemSolver> solverMap = new LinkedHashMap<>();
 
         solverMap.put("Auction", new AuctionAlgorithm());
-//        solverMap.put("MODI", new ModiMethod());
+        solverMap.put("MODI", new ModiMethod());
 
         return solverMap;
     }

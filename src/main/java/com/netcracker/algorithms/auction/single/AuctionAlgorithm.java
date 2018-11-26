@@ -1,4 +1,4 @@
-package com.netcracker.algorithms.auction;
+package com.netcracker.algorithms.auction.single;
 
 import com.netcracker.algorithms.Allocation;
 import com.netcracker.algorithms.TransportationProblem;
@@ -10,8 +10,8 @@ import com.netcracker.algorithms.auction.epsilonScaling.EpsilonSequenceProducer;
 
 import java.util.List;
 
-import static com.netcracker.algorithms.auction.AssignmentPhaseUtils.performAssignmentPhase;
-import static com.netcracker.algorithms.auction.BiddingPhaseUtils.performBiddingPhase;
+import static com.netcracker.algorithms.auction.single.AssignmentPhaseUtils.performSingleThreadedAssignmentPhase;
+import static com.netcracker.algorithms.auction.single.BiddingPhaseUtils.performBiddingPhase;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 
 public class AuctionAlgorithm implements TransportationProblemSolver {
@@ -78,7 +78,7 @@ public class AuctionAlgorithm implements TransportationProblemSolver {
             throw new IllegalStateException("No new bids");
         }
 
-        performAssignmentPhase(
+        performSingleThreadedAssignmentPhase(
                 flowMatrix,
                 bidMap,
                 sinkArray.length

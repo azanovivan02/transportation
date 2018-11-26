@@ -1,10 +1,11 @@
 package com.netcracker;
 
-import com.netcracker.runners.DefaultRunner;
+import com.netcracker.runners.ModiComparisonTestRunner;
 
 public class Main {
 
     public static void main(String[] args) {
-        DefaultRunner.run();
+        ModiComparisonTestRunner runner = new ModiComparisonTestRunner();
+        runner.run();
     }
 }

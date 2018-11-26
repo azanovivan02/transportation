@@ -1,4 +1,4 @@
-package com.netcracker.algorithms.auction;
+package com.netcracker.algorithms.auction.single;
 
 import com.netcracker.algorithms.auction.entities.*;
 

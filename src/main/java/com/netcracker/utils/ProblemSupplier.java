@@ -10,17 +10,17 @@ import static java.util.Arrays.asList;
 public class ProblemSupplier {
 
     public static List<TransportationProblem> createProblemList() {
-//        return createFixedProblemList();
-        return createRandomProblemList();
+        return createFixedProblemList();
+//        return createRandomProblemList();
     }
 
     private static List<TransportationProblem> createFixedProblemList(){
         return asList(
                 createSmallProblem(),
-                createProblemFive(),
-                createProblemTen(),
-                createProblemTwenty(),
-                createProblemFifty()
+                createProblemFive()
+//                createProblemTen()
+//                createProblemTwenty()
+//                createProblemFifty()
         );
     }
 

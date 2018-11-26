@@ -1,4 +1,4 @@
-package com.netcracker.algorithms.auction;
+package com.netcracker.algorithms.auction.single;
 
 import com.netcracker.algorithms.auction.entities.*;
 
@@ -15,7 +15,7 @@ import static java.util.Comparator.comparingDouble;
 
 public class AssignmentPhaseUtils {
 
-    static void performAssignmentPhase(FlowMatrix flowMatrix, BidMap bidMap, int sinkAmount) {
+    static void performSingleThreadedAssignmentPhase(FlowMatrix flowMatrix, BidMap bidMap, int sinkAmount) {
         for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
             info("\n=== Processing bids for sink %d ==============\n", sinkIndex);
             List<Bid> acceptedBidList = new ArrayList<>();
