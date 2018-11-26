@@ -1,9 +1,10 @@
 package com.netcracker.algorithms.auction.concurrent;
 
 import com.netcracker.algorithms.auction.entities.Bid;
-import com.netcracker.algorithms.auction.entities.FlowMatrix;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 import static com.netcracker.algorithms.auction.concurrent.ConcurrentAssignmentPhaseUtils.*;
 import static com.netcracker.algorithms.auction.entities.BidUtils.getTotalVolume;
@@ -13,11 +14,11 @@ import static java.util.stream.Collectors.toList;
 
 public class EndBarrierAction implements Runnable {
 
-    final FlowMatrix flowMatrix;
+    final ConcurrentFlowMatrix flowMatrix;
     final Set<Bid> bidSet;
     final int sinkAmount;
 
-    public EndBarrierAction(FlowMatrix flowMatrix, Set<Bid> bidSet, int sinkAmount) {
+    public EndBarrierAction(ConcurrentFlowMatrix flowMatrix, Set<Bid> bidSet, int sinkAmount) {
         this.flowMatrix = flowMatrix;
         this.bidSet = bidSet;
         this.sinkAmount = sinkAmount;

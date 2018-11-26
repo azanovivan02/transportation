@@ -1,17 +1,12 @@
 package com.netcracker.algorithms.auction.concurrent;
 
 import com.netcracker.algorithms.auction.entities.Bid;
-import com.netcracker.algorithms.auction.entities.BidMap;
 import com.netcracker.algorithms.auction.entities.Flow;
-import com.netcracker.algorithms.auction.entities.FlowMatrix;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.netcracker.algorithms.auction.entities.FlowUtils.*;
-import static com.netcracker.utils.GeneralUtils.doubleEquals;
-import static com.netcracker.utils.GeneralUtils.removeLast;
-import static com.netcracker.utils.io.AssertionUtils.customAssert;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 
 public class ConcurrentBiddingPhaseUtils {

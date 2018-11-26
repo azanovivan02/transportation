@@ -18,7 +18,7 @@ import static java.util.Comparator.comparingDouble;
 
 public class ConcurrentAssignmentPhaseUtils {
 
-    static void assertThatNewVolumeIsCorrect(int sinkIndex, FlowMatrix flowMatrix) {
+    static void assertThatNewVolumeIsCorrect(int sinkIndex, ConcurrentFlowMatrix flowMatrix) {
         List<Flow> newFlowList = flowMatrix.getCurrentFlowListForSink(sinkIndex);
         int newTotalVolume = FlowUtils.getTotalVolume(newFlowList);
 
@@ -27,7 +27,7 @@ public class ConcurrentAssignmentPhaseUtils {
         customAssert(newTotalVolume == maxVolume, message);
     }
 
-    static void addFlowsForAcceptedBids(int sinkIndex, FlowMatrix flowMatrix, List<Bid> acceptedBidList) {
+    static void addFlowsForAcceptedBids(int sinkIndex, ConcurrentFlowMatrix flowMatrix, List<Bid> acceptedBidList) {
         for (Bid bid : acceptedBidList) {
             info("Processing bid: %s", bid);
             int bidderSourceIndex = bid.getBidderSourceIndex();
@@ -39,7 +39,7 @@ public class ConcurrentAssignmentPhaseUtils {
         }
     }
 
-    static void removeLeastExpensiveFlows(int sinkIndex, FlowMatrix flowMatrix, Integer acceptedBidVolume) {
+    static void removeLeastExpensiveFlows(int sinkIndex, ConcurrentFlowMatrix flowMatrix, Integer acceptedBidVolume) {
         List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSink(sinkIndex);
         sortByPriceDescending(currentFlowList);
 
@@ -61,7 +61,7 @@ public class ConcurrentAssignmentPhaseUtils {
         }
     }
 
-    static List<Bid> chooseBidsToAccept(int sinkIndex, FlowMatrix flowMatrix, List<Bid> bidList) {
+    static List<Bid> chooseBidsToAccept(int sinkIndex, ConcurrentFlowMatrix flowMatrix, List<Bid> bidList) {
         int maxVolume = flowMatrix.getMaxVolumeForSink(sinkIndex);
 
         List<Bid> acceptedBidList = new ArrayList<>();
@@ -97,7 +97,7 @@ public class ConcurrentAssignmentPhaseUtils {
         return acceptedBidList;
     }
 
-    static void assertThatOwnerHasRequiredVolume(FlowMatrix flowMatrix, int sinkIndex, Bid bid, int volume) {
+    static void assertThatOwnerHasRequiredVolume(ConcurrentFlowMatrix flowMatrix, int sinkIndex, Bid bid, int volume) {
         int ownerSourceIndex = bid.getOwnerSourceIndex();
         int currentlyOwnedVolume = flowMatrix.getFlow(ownerSourceIndex, sinkIndex).getVolume();
         if (currentlyOwnedVolume < volume) {

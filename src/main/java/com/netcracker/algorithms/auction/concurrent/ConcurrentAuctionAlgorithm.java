@@ -41,7 +41,7 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
         final int[][] benefitMatrix = convertToBenefitMatrix(problem.getCostMatrix());
 
         // === mutable date ===============
-        final FlowMatrix flowMatrix = new FlowMatrix(sourceArray, sinkArray);
+        final ConcurrentFlowMatrix flowMatrix = new ConcurrentFlowMatrix(sourceArray, sinkArray);
         final Set<Bid> bidSet = newSetFromMap(new ConcurrentHashMap<>());
         final AtomicInteger currentSourceIndex = new AtomicInteger();
         final AtomicBoolean assignmentIsComplete = new AtomicBoolean();

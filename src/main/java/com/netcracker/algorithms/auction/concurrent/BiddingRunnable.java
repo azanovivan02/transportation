@@ -2,7 +2,6 @@ package com.netcracker.algorithms.auction.concurrent;
 
 import com.netcracker.algorithms.auction.entities.Bid;
 import com.netcracker.algorithms.auction.entities.Flow;
-import com.netcracker.algorithms.auction.entities.FlowMatrix;
 
 import java.util.List;
 import java.util.Set;
@@ -10,9 +9,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.netcracker.algorithms.auction.concurrent.ConcurrentBiddingPhaseUtils.createBidForFlow;
-import static com.netcracker.algorithms.auction.concurrent.ConcurrentBiddingPhaseUtils.getAddedFlowList;
-import static com.netcracker.algorithms.auction.concurrent.ConcurrentBiddingPhaseUtils.getAvailableVolume;
+import static com.netcracker.algorithms.auction.concurrent.ConcurrentBiddingPhaseUtils.*;
 import static com.netcracker.algorithms.auction.concurrent.ConcurrentUtils.awaitBarrier;
 import static com.netcracker.algorithms.auction.entities.FlowUtils.getTotalVolume;
 import static com.netcracker.utils.GeneralUtils.doubleEquals;
@@ -28,7 +25,7 @@ public class BiddingRunnable implements Runnable {
 
     final int[] sourceArray;
     final int[][] benefitMatrix;
-    final FlowMatrix flowMatrix;
+    final ConcurrentFlowMatrix flowMatrix;
 
     final Set<Bid> bidSet;
     final AtomicInteger currentSourceIndex;
@@ -41,7 +38,7 @@ public class BiddingRunnable implements Runnable {
                            Double epsilon,
                            int[] sourceArray,
                            int[][] benefitMatrix,
-                           FlowMatrix flowMatrix,
+                           ConcurrentFlowMatrix flowMatrix,
                            Set<Bid> bidSet,
                            AtomicInteger currentSourceIndex,
                            AtomicBoolean flowMatrixIsComplete,
