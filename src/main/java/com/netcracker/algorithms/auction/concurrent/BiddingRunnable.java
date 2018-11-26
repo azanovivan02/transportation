@@ -7,9 +7,12 @@ import com.netcracker.algorithms.auction.entities.FlowMatrix;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.netcracker.algorithms.auction.concurrent.ConcurrentBiddingPhaseUtils.createBidForFlow;
+import static com.netcracker.algorithms.auction.concurrent.ConcurrentBiddingPhaseUtils.getAddedFlowList;
+import static com.netcracker.algorithms.auction.concurrent.ConcurrentBiddingPhaseUtils.getAvailableVolume;
 import static com.netcracker.algorithms.auction.concurrent.ConcurrentUtils.awaitBarrier;
 import static com.netcracker.algorithms.auction.entities.FlowUtils.getTotalVolume;
 import static com.netcracker.utils.GeneralUtils.doubleEquals;
@@ -29,6 +32,7 @@ public class BiddingRunnable implements Runnable {
 
     final Set<Bid> bidSet;
     final AtomicInteger currentSourceIndex;
+    final AtomicBoolean flowMatrixIsComplete;
 
     final CyclicBarrier startBarrier;
     final CyclicBarrier endBarrier;
@@ -40,6 +44,7 @@ public class BiddingRunnable implements Runnable {
                            FlowMatrix flowMatrix,
                            Set<Bid> bidSet,
                            AtomicInteger currentSourceIndex,
+                           AtomicBoolean flowMatrixIsComplete,
                            CyclicBarrier startBarrier,
                            CyclicBarrier endBarrier) {
         this.id = id;
@@ -49,15 +54,20 @@ public class BiddingRunnable implements Runnable {
         this.flowMatrix = flowMatrix;
         this.bidSet = bidSet;
         this.currentSourceIndex = currentSourceIndex;
+        this.flowMatrixIsComplete = flowMatrixIsComplete;
         this.startBarrier = startBarrier;
         this.endBarrier = endBarrier;
     }
 
     @Override
     public void run() {
-        while (!flowMatrix.isComplete()) {
+        while (true) {
 
             awaitBarrier(startBarrier);
+
+            if(flowMatrixIsComplete.get()){
+                break;
+            }
 
             while (true) {
                 int sourceIndex = currentSourceIndex.incrementAndGet();
@@ -68,9 +78,9 @@ public class BiddingRunnable implements Runnable {
 
                 List<Flow> availableFlowList = flowMatrix.getAvailableFlowListForSink(sourceIndex);
                 List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSource(sourceIndex);
-                int availableVolume = ConcurrentBiddingPhaseUtils.getAvailableVolume(sourceArray[sourceIndex], currentFlowList);
+                int availableVolume = getAvailableVolume(sourceArray[sourceIndex], currentFlowList);
 
-                List<Flow> desiredFlowList = ConcurrentBiddingPhaseUtils.getAddedFlowList(sourceIndex, availableFlowList, availableVolume, benefitMatrix);
+                List<Flow> desiredFlowList = getAddedFlowList(sourceIndex, availableFlowList, availableVolume, benefitMatrix);
 
                 customAssert(
                         doubleEquals(getTotalVolume(desiredFlowList), availableVolume)

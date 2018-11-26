@@ -9,11 +9,14 @@ import com.netcracker.algorithms.auction.epsilonScaling.EpsilonSequenceProducer;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.netcracker.algorithms.TransportationProblem.convertToBenefitMatrix;
 import static com.netcracker.algorithms.auction.concurrent.ConcurrentUtils.executeRunnableList;
 import static com.netcracker.utils.io.AssertionUtils.customAssert;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
+import static java.util.Collections.newSetFromMap;
 
 public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
 
@@ -31,22 +34,20 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
 
     @Override
     public Allocation findAllocation(TransportationProblem problem) {
-        int problemSize = 10;
-        final List<Double> epsilonSequence = epsilonProducer.getEpsilonSequence(problemSize);
-        final Double epsilon = epsilonSequence.get(0);
+        final Double epsilon = getEpsilon();
 
         final int[] sourceArray = problem.getSourceArray();
         final int[] sinkArray = problem.getSinkArray();
-        final int[][] costMatrix = problem.getCostMatrix();
-        final int[][] benefitMatrix = TransportationProblem.convertToBenefitMatrix(costMatrix);
+        final int[][] benefitMatrix = convertToBenefitMatrix(problem.getCostMatrix());
         final FlowMatrix flowMatrix = new FlowMatrix(sourceArray, sinkArray);
 
         int runnableAmount = 4;
 
-        final Set<Bid> bidSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        final Set<Bid> bidSet = newSetFromMap(new ConcurrentHashMap<>());
         final AtomicInteger currentSourceIndex = new AtomicInteger();
+        final AtomicBoolean assignmentIsComplete = new AtomicBoolean();
 
-        StartBarrierAction startBarrierAction = new StartBarrierAction(bidSet, currentSourceIndex);
+        StartBarrierAction startBarrierAction = new StartBarrierAction(bidSet, currentSourceIndex, flowMatrix, assignmentIsComplete);
         final CyclicBarrier startBarrier = new CyclicBarrier(runnableAmount, startBarrierAction);
 
         EndBarrierAction endBarrierAction = new EndBarrierAction(flowMatrix, bidSet, sinkArray.length);
@@ -62,7 +63,7 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
                     flowMatrix,
                     bidSet,
                     currentSourceIndex,
-                    startBarrier,
+                    assignmentIsComplete, startBarrier,
                     endBarrier
             );
             biddingRunnableList.add(biddingRunnable);
@@ -77,5 +78,11 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
 
         int[][] volumeMatrix = flowMatrix.getVolumeMatrix();
         return new Allocation(problem, volumeMatrix);
+    }
+
+    private Double getEpsilon() {
+        int problemSize = 10;
+        final List<Double> epsilonSequence = epsilonProducer.getEpsilonSequence(problemSize);
+        return epsilonSequence.get(0);
     }
 }
