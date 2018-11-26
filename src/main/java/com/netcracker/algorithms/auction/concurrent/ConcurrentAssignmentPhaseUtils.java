@@ -1,12 +1,12 @@
 package com.netcracker.algorithms.auction.concurrent;
 
-import com.netcracker.algorithms.auction.entities.*;
+import com.netcracker.algorithms.auction.entities.Bid;
+import com.netcracker.algorithms.auction.entities.Flow;
+import com.netcracker.algorithms.auction.entities.FlowUtils;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
-import static com.netcracker.algorithms.auction.entities.BidUtils.getTotalVolume;
 import static com.netcracker.algorithms.auction.entities.FlowUtils.getSublistWithTotalVolume;
 import static com.netcracker.algorithms.auction.entities.FlowUtils.sortByPriceDescending;
 import static com.netcracker.utils.GeneralUtils.prettyPrintList;
@@ -14,7 +14,6 @@ import static com.netcracker.utils.GeneralUtils.removeLast;
 import static com.netcracker.utils.io.AssertionUtils.customAssert;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 import static java.lang.String.format;
-import static java.util.Comparator.comparingDouble;
 
 public class ConcurrentAssignmentPhaseUtils {
 
@@ -70,7 +69,7 @@ public class ConcurrentAssignmentPhaseUtils {
             Bid bid = removeLast(bidList);
             int volume = bid.getVolume();
 
-            assertThatOwnerHasRequiredVolume(flowMatrix, sinkIndex, bid, volume);
+//            assertThatOwnerHasRequiredVolume(flowMatrix, sinkIndex, bid, volume);
 
             int remainingVolume = maxVolume - acceptedBidVolumeTemp;
             if (volume < remainingVolume) {
@@ -97,20 +96,20 @@ public class ConcurrentAssignmentPhaseUtils {
         return acceptedBidList;
     }
 
-    static void assertThatOwnerHasRequiredVolume(ConcurrentFlowMatrix flowMatrix, int sinkIndex, Bid bid, int volume) {
-        int ownerSourceIndex = bid.getOwnerSourceIndex();
-        int currentlyOwnedVolume = flowMatrix.getFlow(ownerSourceIndex, sinkIndex).getVolume();
-        if (currentlyOwnedVolume < volume) {
-            int bidderSourceIndex = bid.getBidderSourceIndex();
-            String message = format(
-                    "Source %d attempts to buy volume %d to sink %d from source %d, but it owns only %d",
-                    bidderSourceIndex,
-                    volume,
-                    sinkIndex,
-                    ownerSourceIndex,
-                    currentlyOwnedVolume
-            );
-            throw new IllegalStateException(message);
-        }
-    }
+//    static void assertThatOwnerHasRequiredVolume(ConcurrentFlowMatrix flowMatrix, int sinkIndex, Bid bid, int volume) {
+//        int ownerSourceIndex = bid.getOwnerSourceIndex();
+//        int currentlyOwnedVolume = flowMatrix.getFlow(ownerSourceIndex, sinkIndex).getVolume();
+//        if (currentlyOwnedVolume < volume) {
+//            int bidderSourceIndex = bid.getBidderSourceIndex();
+//            String message = format(
+//                    "Source %d attempts to buy volume %d to sink %d from source %d, but it owns only %d",
+//                    bidderSourceIndex,
+//                    volume,
+//                    sinkIndex,
+//                    ownerSourceIndex,
+//                    currentlyOwnedVolume
+//            );
+//            throw new IllegalStateException(message);
+//        }
+//    }
 }

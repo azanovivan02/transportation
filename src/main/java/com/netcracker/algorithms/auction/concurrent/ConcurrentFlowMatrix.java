@@ -41,41 +41,7 @@ public class ConcurrentFlowMatrix {
         this.unusedVolumeArray = createUnusedVolumeArray(sinkArray);
     }
 
-    public Flow getFlow(int sourceIndex,
-                        int sinkIndex) {
-        if (sourceIndex >= sourceAmount) {
-            throw new IllegalArgumentException("Source " + sourceIndex + " does not exist");
-        }
-        if (sinkIndex >= sinkAmount) {
-            throw new IllegalArgumentException("Sink " + sinkIndex + " does not exist");
-        }
-        if (sourceIndex < 0) {
-            int volume = unusedVolumeArray[sinkIndex];
-            return new Flow(
-                    sourceIndex,
-                    sinkIndex,
-                    volume,
-                    UNUSED_PRICE
-            );
-        } else {
-            int volume = volumeMatrix[sourceIndex][sinkIndex];
-            double price = priceMatrix[sourceIndex][sinkIndex];
-            return new Flow(
-                    sourceIndex,
-                    sinkIndex,
-                    volume,
-                    price
-            );
-        }
-    }
-
-    public int[][] getVolumeMatrix() {
-        return volumeMatrix;
-    }
-
-    public double[][] getPriceMatrix() {
-        return priceMatrix;
-    }
+    // === Flow =====================================================
 
     public void increaseVolumeForFlow(int sourceIndex,
                                       int sinkIndex,
@@ -113,7 +79,6 @@ public class ConcurrentFlowMatrix {
     public void setPriceForFlow(int sourceIndex,
                                 int sinkIndex,
                                 double newPrice) {
-//        double oldPrice = priceMatrix[sourceIndex][sinkIndex];
         double oldPrice = Double.MIN_VALUE;
         if (newPrice >= oldPrice) {
             priceMatrix[sourceIndex][sinkIndex] = newPrice;
@@ -128,15 +93,7 @@ public class ConcurrentFlowMatrix {
         }
     }
 
-    public Flow getUnusedFlow(int sinkIndex) {
-        int unusedVolume = unusedVolumeArray[sinkIndex];
-        return new Flow(
-                UNUSED_SOURCE_INDEX,
-                sinkIndex,
-                unusedVolume,
-                UNUSED_PRICE
-        );
-    }
+    // === Source =====================================================
 
     public List<Flow> getCurrentFlowListForSource(int sourceIndex) {
         return IntStream
@@ -146,6 +103,8 @@ public class ConcurrentFlowMatrix {
                 .filter(Flow::isNotEmpty)
                 .collect(toList());
     }
+
+    // === Sink =====================================================
 
     public List<Flow> getCurrentFlowListForSink(int sinkIndex) {
         List<Flow> usedFlowList =
@@ -188,10 +147,10 @@ public class ConcurrentFlowMatrix {
         return flowList;
     }
 
-    public void resetFlowVolumeForSink(int sinkIndex) {
-        for (int sourceIndex = 0; sourceIndex < sourceAmount; sourceIndex++) {
-            volumeMatrix[sourceIndex][sinkIndex] = 0;
-        }
+    // === used in single thread ========================================
+
+    public int[][] getVolumeMatrix() {
+        return volumeMatrix;
     }
 
     public boolean isComplete() {
@@ -203,22 +162,6 @@ public class ConcurrentFlowMatrix {
             }
         }
         return true;
-    }
-
-    private int getUsedVolumeForSource(int sourceIndex) {
-        int usedVolume = 0;
-        for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
-            usedVolume += volumeMatrix[sourceIndex][sinkIndex];
-        }
-        return usedVolume;
-    }
-
-    private int getUsedVolumeForSink(int sinkIndex) {
-        int usedVolume = 0;
-        for (int sourseIndex = 0; sourseIndex < sourceAmount; sourseIndex++) {
-            usedVolume += volumeMatrix[sourseIndex][sinkIndex];
-        }
-        return usedVolume;
     }
 
     public void assertIsValid() {
@@ -235,6 +178,62 @@ public class ConcurrentFlowMatrix {
 
     public String volumeMatrixToString() {
         return intMatrixToString(volumeMatrix);
+    }
+
+    // === private ======================================================
+
+    private Flow getFlow(int sourceIndex,
+                         int sinkIndex) {
+        if (sourceIndex >= sourceAmount) {
+            throw new IllegalArgumentException("Source " + sourceIndex + " does not exist");
+        }
+        if (sinkIndex >= sinkAmount) {
+            throw new IllegalArgumentException("Sink " + sinkIndex + " does not exist");
+        }
+        if (sourceIndex < 0) {
+            int volume = unusedVolumeArray[sinkIndex];
+            return new Flow(
+                    sourceIndex,
+                    sinkIndex,
+                    volume,
+                    UNUSED_PRICE
+            );
+        } else {
+            int volume = volumeMatrix[sourceIndex][sinkIndex];
+            double price = priceMatrix[sourceIndex][sinkIndex];
+            return new Flow(
+                    sourceIndex,
+                    sinkIndex,
+                    volume,
+                    price
+            );
+        }
+    }
+
+    private Flow getUnusedFlow(int sinkIndex) {
+        int unusedVolume = unusedVolumeArray[sinkIndex];
+        return new Flow(
+                UNUSED_SOURCE_INDEX,
+                sinkIndex,
+                unusedVolume,
+                UNUSED_PRICE
+        );
+    }
+
+    private int getUsedVolumeForSource(int sourceIndex) {
+        int usedVolume = 0;
+        for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
+            usedVolume += volumeMatrix[sourceIndex][sinkIndex];
+        }
+        return usedVolume;
+    }
+
+    private int getUsedVolumeForSink(int sinkIndex) {
+        int usedVolume = 0;
+        for (int sourseIndex = 0; sourseIndex < sourceAmount; sourseIndex++) {
+            usedVolume += volumeMatrix[sourseIndex][sinkIndex];
+        }
+        return usedVolume;
     }
 
     private static int[] createUnusedVolumeArray(int[] sinkArray) {
