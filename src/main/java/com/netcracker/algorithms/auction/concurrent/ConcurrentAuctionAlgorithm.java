@@ -57,6 +57,7 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
             synchronized (bidMap) {
                 bidMap.clear();
             }
+            currentSourceIndex.set(-1);
         });
 
         final CyclicBarrier endBarrier = new CyclicBarrier(runnableAmount, ()->{
@@ -90,7 +91,12 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
 
                 // === Biding =========================================================================================================================================
 
-                for (int sourceIndex = 0; sourceIndex < sourceArray.length; sourceIndex++) {
+                while (true) {
+                    int sourceIndex = currentSourceIndex.incrementAndGet();
+                    if(sourceIndex >= sourceArray.length) {
+                        break;
+                    }
+
                     List<Flow> availableFlowList = flowMatrix.getAvailableFlowListForSink(sourceIndex);
                     List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSource(sourceIndex);
                     int availableVolume = ConcurrentBiddingPhaseUtils.getAvailableVolume(sourceArray[sourceIndex], currentFlowList);
@@ -117,8 +123,6 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
                 synchronized (bidMap) {
                     customAssert(bidMap.size() != 0, "No new bids");
                 }
-
-                // === Assignment =========================================================================================================================================
 
                 awaitBarrier(endBarrier);
             }
