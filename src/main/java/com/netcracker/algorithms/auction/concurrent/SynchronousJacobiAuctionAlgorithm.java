@@ -3,32 +3,34 @@ package com.netcracker.algorithms.auction.concurrent;
 import com.netcracker.algorithms.Allocation;
 import com.netcracker.algorithms.TransportationProblem;
 import com.netcracker.algorithms.TransportationProblemSolver;
-import com.netcracker.algorithms.auction.entities.*;
+import com.netcracker.algorithms.auction.entities.Bid;
 import com.netcracker.algorithms.auction.epsilonScaling.DefaultEpsilonSequenceProducer;
 import com.netcracker.algorithms.auction.epsilonScaling.EpsilonSequenceProducer;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.netcracker.algorithms.TransportationProblem.convertToBenefitMatrix;
 import static com.netcracker.algorithms.auction.concurrent.ConcurrentUtils.executeRunnableList;
-import static com.netcracker.utils.io.AssertionUtils.customAssert;
 import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 import static java.util.Collections.newSetFromMap;
 
-public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
+public class SynchronousJacobiAuctionAlgorithm implements TransportationProblemSolver {
 
     public static final int EXECUTOR_THREAD_AMOUNT = 8;
 
     private final EpsilonSequenceProducer epsilonProducer;
 
-    public ConcurrentAuctionAlgorithm() {
+    public SynchronousJacobiAuctionAlgorithm() {
         this(new DefaultEpsilonSequenceProducer(1.0, 0.25));
     }
 
-    public ConcurrentAuctionAlgorithm(EpsilonSequenceProducer epsilonProducer) {
+    public SynchronousJacobiAuctionAlgorithm(EpsilonSequenceProducer epsilonProducer) {
         this.epsilonProducer = epsilonProducer;
     }
 
@@ -40,7 +42,7 @@ public class ConcurrentAuctionAlgorithm implements TransportationProblemSolver {
         final int[] sinkArray = problem.getSinkArray();
         final int[][] benefitMatrix = convertToBenefitMatrix(problem.getCostMatrix());
 
-        // === mutable date ===============
+        // === mutable data ===============
         final ConcurrentFlowMatrix flowMatrix = new ConcurrentFlowMatrix(sourceArray, sinkArray);
         final Set<Bid> bidSet = newSetFromMap(new ConcurrentHashMap<>());
         final AtomicInteger currentSourceIndex = new AtomicInteger();

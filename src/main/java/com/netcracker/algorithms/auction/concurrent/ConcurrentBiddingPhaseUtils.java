@@ -12,8 +12,8 @@ import static com.netcracker.utils.io.logging.StaticLoggerHolder.info;
 public class ConcurrentBiddingPhaseUtils {
 
     static Bid createBidForFlow(Flow desiredFlow,
-                                int sourceIndex,
-                                int[] benefitMatrix,
+                                int desiredFlowBenefit,
+                                int bidderSourceIndex,
                                 double secondBestFlowValue,
                                 Double epsilon,
                                 Flow secondBestFlow) {
@@ -21,13 +21,12 @@ public class ConcurrentBiddingPhaseUtils {
         int desiredFlowSinkIndex = desiredFlow.getSinkIndex();
         int desiredFlowVolume = desiredFlow.getVolume();
 
-        int desiredFlowBenefit = benefitMatrix[desiredFlowSinkIndex];
         double desiredFlowPrice = desiredFlow.getPrice();
         double desiredFlowValue = desiredFlowBenefit - desiredFlowPrice;
 
         double bidValue = desiredFlowPrice + (desiredFlowValue - secondBestFlowValue) + epsilon;
 
-        info("Making bid: sourse = %d, sink = %d", sourceIndex, desiredFlowSinkIndex);
+        info("Making bid: sourse = %d, sink = %d", bidderSourceIndex, desiredFlowSinkIndex);
         info("  - Desired flow: %s", desiredFlow);
         info("  - Second best flow: %s", secondBestFlow);
         info("  - Desired flow benefit: %s", desiredFlowBenefit);
@@ -38,7 +37,7 @@ public class ConcurrentBiddingPhaseUtils {
         info("  - Bid value %s", bidValue);
 
         return new Bid(
-                sourceIndex,
+                bidderSourceIndex,
                 desiredFlowOwnerSourceIndex,
                 desiredFlowSinkIndex,
                 desiredFlowVolume,
@@ -46,10 +45,10 @@ public class ConcurrentBiddingPhaseUtils {
         );
     }
 
-    static List<Flow> getAddedFlowList(int sourceIndex,
-                                               List<Flow> availableFlowList,
-                                               int availableVolume,
-                                               int[][] benefitMatrix) {
+    static List<Flow> getDesiredFlowList(int sourceIndex,
+                                         List<Flow> availableFlowList,
+                                         int availableVolume,
+                                         int[][] benefitMatrix) {
         sortByValueAscending(
                 availableFlowList,
                 sourceIndex,
@@ -60,15 +59,15 @@ public class ConcurrentBiddingPhaseUtils {
                 sourceIndex,
                 benefitMatrix
         );
-        return getSublistWithTotalVolume(
+        return getHeadSublistWithTotalVolume(
                 availableFlowList,
                 availableVolume
         );
     }
 
     static void verifyThatSortedByValue(List<Flow> flowList,
-                                                int sourceIndex,
-                                                int[][] benefitMatrix) {
+                                        int sourceIndex,
+                                        int[][] benefitMatrix) {
         List<Double> flowValueList =
                 flowList
                         .stream()
@@ -83,8 +82,8 @@ public class ConcurrentBiddingPhaseUtils {
         }
     }
 
-    static int getAvailableVolume(int totalVolume,
-                                          List<Flow> currentFlowList) {
+    static int getRemainingVolume(int totalVolume,
+                                  List<Flow> currentFlowList) {
         int currentVolume = getTotalVolume(currentFlowList);
         return totalVolume - currentVolume;
     }

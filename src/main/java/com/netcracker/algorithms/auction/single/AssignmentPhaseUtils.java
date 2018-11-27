@@ -65,7 +65,7 @@ public class AssignmentPhaseUtils {
         info("Flows to sink %d by descending price:", sinkIndex);
         info(prettyPrintList(currentFlowList));
 
-        List<Flow> leastExpensiveFlowList = getSublistWithTotalVolume(currentFlowList, acceptedBidVolume);
+        List<Flow> leastExpensiveFlowList = getHeadSublistWithTotalVolume(currentFlowList, acceptedBidVolume);
         if (!leastExpensiveFlowList.isEmpty()) {
             info("Least expensive flows from them, which have total volume %d:", acceptedBidVolume);
         }

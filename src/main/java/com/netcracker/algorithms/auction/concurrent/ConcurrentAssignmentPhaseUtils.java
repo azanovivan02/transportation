@@ -7,7 +7,7 @@ import com.netcracker.algorithms.auction.entities.FlowUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.netcracker.algorithms.auction.entities.FlowUtils.getSublistWithTotalVolume;
+import static com.netcracker.algorithms.auction.entities.FlowUtils.getHeadSublistWithTotalVolume;
 import static com.netcracker.algorithms.auction.entities.FlowUtils.sortByPriceDescending;
 import static com.netcracker.utils.GeneralUtils.prettyPrintList;
 import static com.netcracker.utils.GeneralUtils.removeLast;
@@ -39,13 +39,13 @@ public class ConcurrentAssignmentPhaseUtils {
     }
 
     static void removeLeastExpensiveFlows(int sinkIndex, ConcurrentFlowMatrix flowMatrix, Integer acceptedBidVolume) {
-        List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSink(sinkIndex);
+        final List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSink(sinkIndex);
         sortByPriceDescending(currentFlowList);
 
         info("Flows to sink %d by descending price:", sinkIndex);
         info(prettyPrintList(currentFlowList));
 
-        List<Flow> leastExpensiveFlowList = getSublistWithTotalVolume(currentFlowList, acceptedBidVolume);
+        List<Flow> leastExpensiveFlowList = getHeadSublistWithTotalVolume(currentFlowList, acceptedBidVolume);
         if (!leastExpensiveFlowList.isEmpty()) {
             info("Least expensive flows from them, which have total volume %d:", acceptedBidVolume);
         }
@@ -60,8 +60,7 @@ public class ConcurrentAssignmentPhaseUtils {
         }
     }
 
-    static List<Bid> chooseBidsToAccept(int sinkIndex, ConcurrentFlowMatrix flowMatrix, List<Bid> bidList) {
-        int maxVolume = flowMatrix.getMaxVolumeForSink(sinkIndex);
+    static List<Bid> chooseBidsToAccept(int sinkIndex, List<Bid> bidList, int maxVolume) {
 
         List<Bid> acceptedBidList = new ArrayList<>();
         int acceptedBidVolumeTemp = 0;

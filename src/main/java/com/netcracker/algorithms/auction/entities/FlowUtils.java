@@ -32,8 +32,8 @@ public class FlowUtils {
         flowList.sort(reversedPriceComparator);
     }
 
-    public static List<Flow> getSublistWithTotalVolume(List<Flow> flowList,
-                                                       int totalVolume) {
+    public static List<Flow> getHeadSublistWithTotalVolume(List<Flow> flowList,
+                                                           int totalVolume) {
         List<Flow> addedFlows = new ArrayList<>();
         int addedVolume = 0;
         while (addedVolume < totalVolume) {

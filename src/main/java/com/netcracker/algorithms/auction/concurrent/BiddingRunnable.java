@@ -67,40 +67,38 @@ public class BiddingRunnable implements Runnable {
             }
 
             while (true) {
-                int sourceIndex = currentSourceIndex.incrementAndGet();
+                final int sourceIndex = currentSourceIndex.incrementAndGet();
                 if (sourceIndex >= sourceArray.length) {
                     break;
                 }
 
                 info("Thread %d creating bids for source %d", id, sourceIndex);
 
-                List<Flow> availableFlowList;
-                List<Flow> currentFlowList;
-                synchronized (flowMatrix) {
-                    availableFlowList = flowMatrix.getAvailableFlowListForSink(sourceIndex);
-                    currentFlowList = flowMatrix.getCurrentFlowListForSource(sourceIndex);
-                }
+                // reading from shared mutable state, synchronization happens only by barrier
+                final List<Flow> availableFlowList = flowMatrix.getAvailableFlowListForSource(sourceIndex);
+                final List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSource(sourceIndex);
 
-                int sourceVolume = sourceArray[sourceIndex];
+                final int sourceVolume = sourceArray[sourceIndex];
+                final int remainingVolume = getRemainingVolume(sourceVolume, currentFlowList);
 
-                int availableVolume = getAvailableVolume(sourceVolume, currentFlowList);
-
-                List<Flow> desiredFlowList = getAddedFlowList(sourceIndex, availableFlowList, availableVolume, benefitMatrix);
+                final List<Flow> desiredFlowList = getDesiredFlowList(sourceIndex, availableFlowList, remainingVolume, benefitMatrix);
 
                 customAssert(
-                        doubleEquals(getTotalVolume(desiredFlowList), availableVolume)
+                        doubleEquals(getTotalVolume(desiredFlowList), remainingVolume)
                 );
 
-                Flow secondBestFlow = removeLast(availableFlowList);
-                double secondBestFlowPrice = secondBestFlow.getPrice();
-                int secondBestFlowSinkIndex = secondBestFlow.getSinkIndex();
-                double secondBestFlowValue = benefitMatrix[sourceIndex][secondBestFlowSinkIndex] - secondBestFlowPrice;
+                final Flow secondBestFlow = removeLast(availableFlowList);
+                final double secondBestFlowPrice = secondBestFlow.getPrice();
+                final int secondBestFlowSinkIndex = secondBestFlow.getSinkIndex();
+                final double secondBestFlowValue = benefitMatrix[sourceIndex][secondBestFlowSinkIndex] - secondBestFlowPrice;
 
                 for (Flow desiredFlow : desiredFlowList) {
-                    Bid bid = createBidForFlow(
+                    int desiredFlowSinkIndex = desiredFlow.getSinkIndex();
+                    int desiredFlowBenefit = benefitMatrix[sourceIndex][desiredFlowSinkIndex];
+                    final Bid bid = createBidForFlow(
                             desiredFlow,
+                            desiredFlowBenefit,
                             sourceIndex,
-                            benefitMatrix[sourceIndex],
                             secondBestFlowValue,
                             epsilon,
                             secondBestFlow

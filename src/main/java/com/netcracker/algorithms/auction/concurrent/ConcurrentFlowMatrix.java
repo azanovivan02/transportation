@@ -45,7 +45,7 @@ public class ConcurrentFlowMatrix {
         this.unusedVolumeArray = createUnusedVolumeArray(sinkArray);
     }
 
-    // === Both =====================================================
+    // === Write: 1 source, 1 sink =====================================================
 
     public void increaseVolumeForFlow(int sourceIndex,
                                       int sinkIndex,
@@ -80,24 +80,14 @@ public class ConcurrentFlowMatrix {
         }
     }
 
+    //todo revise price change rules
     public void setPriceForFlow(int sourceIndex,
                                 int sinkIndex,
                                 double newPrice) {
-        double oldPrice = Double.MIN_VALUE;
-        if (newPrice >= oldPrice) {
-            priceMatrix[sourceIndex][sinkIndex] = newPrice;
-        } else {
-            throw new IllegalStateException(
-                    "New price has to be bigger" +
-                            ". From source: " + sourceIndex +
-                            ", to sink: " + sinkIndex +
-                            ", old price:" + oldPrice +
-                            ", new price: " + newPrice
-            );
-        }
+        priceMatrix[sourceIndex][sinkIndex] = newPrice;
     }
 
-    // === Source =====================================================
+    // === Read: 1 source, all sinks =========================================
 
     public List<Flow> getCurrentFlowListForSource(int sourceIndex) {
         return IntStream
@@ -108,7 +98,7 @@ public class ConcurrentFlowMatrix {
                 .collect(toList());
     }
 
-    // === Sink =====================================================
+    // === Read: all sources, 1 sink =========================================
 
     public List<Flow> getCurrentFlowListForSink(int sinkIndex) {
         List<Flow> usedFlowList =
@@ -120,16 +110,14 @@ public class ConcurrentFlowMatrix {
                         .collect(toList());
 
         Flow unusedFlow = getUnusedFlow(sinkIndex);
-
         usedFlowList.add(unusedFlow);
+
         return usedFlowList;
     }
 
-    public int getMaxVolumeForSink(int sinkIndex) {
-        return sinkArray[sinkIndex];
-    }
+    //=== Read: all sources, all sinks =======================================
 
-    public List<Flow> getAvailableFlowListForSink(int sourceIndex) {
+    public List<Flow> getAvailableFlowListForSource(int sourceIndex) {
         List<Flow> flowList = new ArrayList<>();
         for (int i = 0; i < sourceAmount; i++) {
             if (i == sourceIndex) {
@@ -151,7 +139,13 @@ public class ConcurrentFlowMatrix {
         return flowList;
     }
 
-    // === used in single thread ========================================
+    // === Read: non mutable data =========================================
+
+    public int getMaxVolumeForSink(int sinkIndex) {
+        return sinkArray[sinkIndex];
+    }
+
+    // === used in single thread at the end ===============================
 
     public int[][] getVolumeMatrix() {
         return volumeMatrix;
@@ -184,7 +178,11 @@ public class ConcurrentFlowMatrix {
         return intMatrixToString(volumeMatrix);
     }
 
-    // === private ======================================================
+// ====================================================================================
+// === private ========================================================================
+// ====================================================================================
+
+    // === Read: 1 source, 1 sink =====================================================
 
     private Flow getFlow(int sourceIndex,
                          int sinkIndex) {
@@ -214,6 +212,8 @@ public class ConcurrentFlowMatrix {
         }
     }
 
+    // === Read: 1 sink =====================================================
+
     private Flow getUnusedFlow(int sinkIndex) {
         int unusedVolume = unusedVolumeArray[sinkIndex];
         return new Flow(
@@ -224,6 +224,8 @@ public class ConcurrentFlowMatrix {
         );
     }
 
+    // === Read: 1 source, all sinks =====================================================
+
     private int getUsedVolumeForSource(int sourceIndex) {
         int usedVolume = 0;
         for (int sinkIndex = 0; sinkIndex < sinkAmount; sinkIndex++) {
@@ -232,6 +234,8 @@ public class ConcurrentFlowMatrix {
         return usedVolume;
     }
 
+    // === Read: all sources, 1 sink =====================================================
+
     private int getUsedVolumeForSink(int sinkIndex) {
         int usedVolume = 0;
         for (int sourseIndex = 0; sourseIndex < sourceAmount; sourseIndex++) {
@@ -239,6 +243,8 @@ public class ConcurrentFlowMatrix {
         }
         return usedVolume;
     }
+
+    // === Static utility ================================================================
 
     private static int[] createUnusedVolumeArray(int[] sinkArray) {
         int[] unusedVolumeArray = new int[sinkArray.length];

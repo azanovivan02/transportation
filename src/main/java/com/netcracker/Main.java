@@ -1,9 +1,7 @@
 package com.netcracker;
 
-import com.netcracker.algorithms.TransportationProblem;
 import com.netcracker.algorithms.TransportationProblemSolver;
-import com.netcracker.algorithms.auction.concurrent.ConcurrentAuctionAlgorithm;
-import com.netcracker.algorithms.auction.single.SingleThreadedAuctionAlgorithm;
+import com.netcracker.algorithms.auction.concurrent.SynchronousJacobiAuctionAlgorithm;
 import com.netcracker.runners.ModiComparisonTestRunner;
 import com.netcracker.runners.StressTestRunner;
 import com.netcracker.runners.TestRunner;
@@ -21,7 +19,7 @@ public class Main {
         );
 
 //        TransportationProblemSolver auctionAlgorithm = new SingleThreadedAuctionAlgorithm();
-        TransportationProblemSolver auctionAlgorithm = new ConcurrentAuctionAlgorithm();
+        TransportationProblemSolver auctionAlgorithm = new SynchronousJacobiAuctionAlgorithm();
 
         for (TestRunner runner : runners) {
             runner.run(auctionAlgorithm);

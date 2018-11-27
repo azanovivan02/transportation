@@ -5,7 +5,7 @@ import com.netcracker.algorithms.auction.entities.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.netcracker.algorithms.auction.entities.FlowUtils.getSublistWithTotalVolume;
+import static com.netcracker.algorithms.auction.entities.FlowUtils.getHeadSublistWithTotalVolume;
 import static com.netcracker.algorithms.auction.entities.FlowUtils.getTotalVolume;
 import static com.netcracker.algorithms.auction.entities.FlowUtils.sortByValueAscending;
 import static com.netcracker.utils.GeneralUtils.doubleEquals;
@@ -109,7 +109,7 @@ public class BiddingPhaseUtils {
                 sourceIndex,
                 benefitMatrix
         );
-        return getSublistWithTotalVolume(
+        return getHeadSublistWithTotalVolume(
                 availableFlowList,
                 availableVolume
         );
