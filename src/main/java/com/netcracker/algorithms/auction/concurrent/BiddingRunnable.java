@@ -75,8 +75,8 @@ public class BiddingRunnable implements Runnable {
                 info("Thread %d creating bids for source %d", id, sourceIndex);
 
                 // reading from shared mutable state, synchronization happens only by barrier
-                final List<Flow> availableFlowList = flowMatrix.getAvailableFlowListForSource(sourceIndex);
                 final List<Flow> currentFlowList = flowMatrix.getCurrentFlowListForSource(sourceIndex);
+                final List<Flow> availableFlowList = flowMatrix.getAvailableFlowListForSource(sourceIndex);
 
                 final int sourceVolume = sourceArray[sourceIndex];
                 final int remainingVolume = getRemainingVolume(sourceVolume, currentFlowList);
